@@ -37,6 +37,11 @@ namespace sdmx_dl_ui
                 v => v.FaultedGrid.Visibility ,
                 b => b ? Visibility.Visible : Visibility.Collapsed )
                 .DisposeWith( disposables );
+
+            view.OneWayBind( viewModel ,
+                    vm => vm.ToolVersion ,
+                    v => v.TextBlockVersion.Text )
+                .DisposeWith( disposables );
         }
     }
 }

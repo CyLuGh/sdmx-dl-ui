@@ -17,6 +17,7 @@ namespace sdmx_dl_ui.ViewModels
         public ViewModelActivator Activator { get; }
 
         public bool IsFaulted { [ObservableAsProperty] get; }
+        public string ToolVersion { [ObservableAsProperty] get; }
         public string[] Sources { [ObservableAsProperty] get; }
         [Reactive] public string ActiveSource { get; set; }
 
@@ -29,6 +30,15 @@ namespace sdmx_dl_ui.ViewModels
 
             InitializeCommands( this );
 
+            CheckScriptCommand
+                .Select( _ => Unit.Default )
+                .InvokeCommand( RetrieveSourcesCommand );
+
+            RetrieveSourcesCommand
+                .ToPropertyEx( this , x => x.Sources , scheduler: RxApp.MainThreadScheduler );
+
+
+
             this.WhenActivated( disposables =>
             {
                 CheckScriptCommand
@@ -38,11 +48,8 @@ namespace sdmx_dl_ui.ViewModels
                     .DisposeWith( disposables );
 
                 CheckScriptCommand
-                    .Select( _ => Unit.Default )
-                    .InvokeCommand( RetrieveSourcesCommand );
-
-                RetrieveSourcesCommand
-                    .ToPropertyEx( this , x => x.Sources , scheduler: RxApp.MainThreadScheduler );
+                    .ToPropertyEx( this , x => x.ToolVersion , scheduler: RxApp.MainThreadScheduler )
+                    .DisposeWith( disposables );
 
                 Observable.Return( Unit.Default )
                     .InvokeCommand( CheckScriptCommand );
@@ -55,9 +62,17 @@ namespace sdmx_dl_ui.ViewModels
                 Observable.Start( () =>
                 {
                     PowerShell.Create()
-                        .AddCommand( "sdmx-dl" )
+                        .AddCommand( "Set-ExecutionPolicy" )
+                        .AddParameter( "Scope" , "CurrentUser" )
+                        .AddParameter( "ExecutionPolicy" , "Unrestricted" )
                         .Invoke();
-                    return string.Empty;
+
+                    var res = PowerShell.Create()
+                        .AddCommand( "sdmx-dl" )
+                        .AddParameter( "V" )
+                        .Invoke();
+
+                    return res.Count > 0 ? res[0].ToString() : string.Empty;
                 } ) );
 
             @this.RetrieveSourcesCommand = ReactiveCommand.CreateFromObservable( () =>

@@ -10,6 +10,17 @@
                  Height="450"
                  Width="900">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <DockPanel Grid.Row="1">
+            <TextBlock x:Name="TextBlockVersion"
+                       DockPanel.Dock="Right" />
+            <Rectangle />
+        </DockPanel>
+
         <UniformGrid x:Name="FaultedGrid"
                      HorizontalAlignment="Stretch"
                      VerticalAlignment="Stretch">
@@ -20,5 +31,6 @@
                        TextAlignment="Center"
                        TextWrapping="Wrap" />
         </UniformGrid>
+
     </Grid>
 </mah:MetroWindow>
