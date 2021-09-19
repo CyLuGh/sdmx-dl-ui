@@ -5,6 +5,7 @@
                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
                  xmlns:local="clr-namespace:sdmx_dl_ui"
+                 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
                  mc:Ignorable="d"
                  Title="sdmx-dl-ui"
                  Height="450"
@@ -15,13 +16,60 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <DockPanel Grid.Row="1">
-            <TextBlock x:Name="TextBlockVersion"
-                       DockPanel.Dock="Right" />
-            <Rectangle />
-        </DockPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"
+                                  MinWidth="350" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+
+            <GroupBox Header="SOURCES"
+                      Style="{DynamicResource MaterialDesignCardGroupBox}"
+                      Margin="5">
+                <ComboBox x:Name="ComboBoxSources"
+                          DisplayMemberPath="Description" />
+            </GroupBox>
+
+            <GroupBox Header="FLOWS"
+                      Style="{DynamicResource MaterialDesignCardGroupBox}"
+                      Margin="5"
+                      Grid.Row="1">
+                <ComboBox x:Name="ComboBoxFlows"
+                          DisplayMemberPath="Label" />
+            </GroupBox>
+        </Grid>
+
+        <materialDesign:ColorZone Mode="Dark"
+                                  Grid.Row="1">
+            <DockPanel>
+                <TextBlock x:Name="TextBlockVersion"
+                           DockPanel.Dock="Right" />
+                <Rectangle />
+            </DockPanel>
+        </materialDesign:ColorZone>
+
+        <UniformGrid x:Name="WorkingGrid"
+                     Visibility="Collapsed"
+                     Background="{DynamicResource MaterialDesignPaper}"
+                     HorizontalAlignment="Stretch"
+                     VerticalAlignment="Stretch">
+            <TextBlock Text="Working"
+                       Style="{DynamicResource MaterialDesignHeadline3TextBlock}"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap" />
+        </UniformGrid>
 
         <UniformGrid x:Name="FaultedGrid"
+                     Visibility="Collapsed"
+                     Background="{DynamicResource MaterialDesignPaper}"
                      HorizontalAlignment="Stretch"
                      VerticalAlignment="Stretch">
             <TextBlock Text="Unable to find sdmx-dl command line"
@@ -31,6 +79,5 @@
                        TextAlignment="Center"
                        TextWrapping="Wrap" />
         </UniformGrid>
-
     </Grid>
 </mah:MetroWindow>

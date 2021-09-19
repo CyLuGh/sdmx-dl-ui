@@ -1,5 +1,6 @@
 ﻿using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using sdmx_dl_ui.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,13 +17,19 @@ namespace sdmx_dl_ui.ViewModels
     {
         public ViewModelActivator Activator { get; }
 
+        public bool IsWorking { [ObservableAsProperty] get; }
         public bool IsFaulted { [ObservableAsProperty] get; }
         public string ToolVersion { [ObservableAsProperty] get; }
-        public string[] Sources { [ObservableAsProperty] get; }
-        [Reactive] public string ActiveSource { get; set; }
+
+        public Source[] Sources { [ObservableAsProperty] get; }
+        [Reactive] public Source ActiveSource { get; set; }
+
+        public Flow[] Flows { [ObservableAsProperty] get; }
+        [Reactive] public Flow ActiveFlow { get; set; }
 
         public ReactiveCommand<Unit , string> CheckScriptCommand { get; private set; }
-        public ReactiveCommand<Unit , string[]> RetrieveSourcesCommand { get; private set; }
+        public ReactiveCommand<Unit , Source[]> RetrieveSourcesCommand { get; private set; }
+        public ReactiveCommand<Source , Flow[]> RetrieveFlowsCommand { get; private set; }
 
         public ScriptsViewModel()
         {
@@ -37,7 +44,15 @@ namespace sdmx_dl_ui.ViewModels
             RetrieveSourcesCommand
                 .ToPropertyEx( this , x => x.Sources , scheduler: RxApp.MainThreadScheduler );
 
+            RetrieveFlowsCommand
+                .ToPropertyEx( this , x => x.Flows , scheduler: RxApp.MainThreadScheduler );
 
+            Observable.Merge(
+                CheckScriptCommand.IsExecuting ,
+                RetrieveSourcesCommand.IsExecuting ,
+                RetrieveFlowsCommand.IsExecuting
+                )
+                .ToPropertyEx( this , x => x.IsWorking , scheduler: RxApp.MainThreadScheduler );
 
             this.WhenActivated( disposables =>
             {
@@ -49,6 +64,11 @@ namespace sdmx_dl_ui.ViewModels
 
                 CheckScriptCommand
                     .ToPropertyEx( this , x => x.ToolVersion , scheduler: RxApp.MainThreadScheduler )
+                    .DisposeWith( disposables );
+
+                this.WhenAnyValue( x => x.ActiveSource )
+                    .WhereNotNull()
+                    .InvokeCommand( RetrieveFlowsCommand )
                     .DisposeWith( disposables );
 
                 Observable.Return( Unit.Default )
@@ -76,10 +96,10 @@ namespace sdmx_dl_ui.ViewModels
                 } ) );
 
             @this.RetrieveSourcesCommand = ReactiveCommand.CreateFromObservable( () =>
-                Observable.Start( () =>
-                {
-                    return Array.Empty<string>();
-                } ) );
+                Observable.Start( () => PowerShellRunner.Query<Source>( "list" , "sources" ) ) );
+
+            @this.RetrieveFlowsCommand = ReactiveCommand.CreateFromObservable( ( Source source ) =>
+                Observable.Start( () => PowerShellRunner.Query<Flow>( "list" , "flows" , source.Name ) ) );
         }
     }
 }
