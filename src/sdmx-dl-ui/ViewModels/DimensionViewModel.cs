@@ -9,51 +9,49 @@ using System.Threading.Tasks;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using sdmx_dl_ui.Models;
+using Splat;
 
 namespace sdmx_dl_ui.ViewModels
 {
-    public class DimensionViewModel : ReactiveObject, IActivatableViewModel, IEquatable<DimensionViewModel>
+    public class DimensionViewModel : ReactiveObject, IEquatable<DimensionViewModel>
     {
-        public ViewModelActivator Activator { get; }
-
-        public Source Source { get; init; }
-        public Flow Flow { get; init; }
-        public string Concept { get; init; }
+        [Reactive] public Source Source { get; set; }
+        [Reactive] public Flow Flow { get; set; }
+        [Reactive] public string Concept { get; set; }
         public string Type { get; init; }
         public string Label { get; init; }
-        public string Coded { get; init; }
+        [Reactive] public bool Coded { get; set; }
         public int Position { get; init; }
 
         [Reactive] public int DesiredPosition { get; set; }
         public CodeLabel[] Values { [ObservableAsProperty] get; }
 
-        internal ReactiveCommand<Unit , CodeLabel[]> RetrieveCodesCommand { get; private set; }
+        internal ReactiveCommand<(Source, Flow, string) , CodeLabel[]> RetrieveCodesCommand { get; private set; }
 
         public DimensionViewModel()
         {
-            Activator = new ViewModelActivator();
-
             InitializeCommands( this );
 
-            this.WhenActivated( disposables =>
-            {
-                //RetrieveCodesCommand
-                //    .ToPropertyEx( this , x => Values , scheduler: RxApp.MainThreadScheduler )
-                //    .DisposeWith( disposables );
+            RetrieveCodesCommand
+                .ToPropertyEx( this , x => x.Values , scheduler: RxApp.MainThreadScheduler );
 
-                Observable.Return( Unit.Default )
-                    .InvokeCommand( RetrieveCodesCommand )
-                    .DisposeWith( disposables );
-            } );
+            this.WhenAnyValue( x => x.Source , x => x.Flow , x => x.Concept , x => x.Coded )
+                .Throttle( TimeSpan.FromMilliseconds( 50 ) )
+                .DistinctUntilChanged()
+                .Where( t => t.Item4 && t.Item1 != null && t.Item2 != null && !string.IsNullOrEmpty( t.Item3 ) )
+                .Select( t => (t.Item1, t.Item2, t.Item3) )
+                .InvokeCommand( RetrieveCodesCommand );
         }
 
         private static void InitializeCommands( DimensionViewModel @this )
         {
-            @this.RetrieveCodesCommand = ReactiveCommand.CreateFromObservable( () =>
-                Observable.Start( () => PowerShellRunner.Query<CodeLabel>( "list" , "codes" , @this.Source.Name , @this.Flow.Ref ,
-                    @this.Concept ) ) );
+            @this.RetrieveCodesCommand = ReactiveCommand.CreateFromObservable( ( (Source, Flow, string) t ) =>
+                 Observable.Start( () =>
+                 {
+                     var (source, flow, concept) = t;
+                     return PowerShellRunner.Query<CodeLabel>( "list" , "codes" , source.Name , flow.Ref , concept );
+                 } ) );
         }
-
 
         public bool Equals( DimensionViewModel other )
         {

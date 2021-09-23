@@ -49,6 +49,5 @@
                 </UniformGrid>
             </Grid>
         </TabItem>
-
     </TabControl>
 </rxui:ReactiveUserControl>
