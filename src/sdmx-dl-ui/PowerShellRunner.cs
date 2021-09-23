@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace sdmx_dl_ui
 {
@@ -30,6 +31,8 @@ namespace sdmx_dl_ui
 
             foreach ( var argument in arguments )
                 query.AddArgument( argument );
+
+            Splat.LogHost.Default.Debug( string.Join( " " , arguments ) );
 
             var res = query.Invoke()
                 .Select( p => p.ToString() )

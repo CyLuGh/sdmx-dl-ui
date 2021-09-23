@@ -63,6 +63,13 @@ namespace sdmx_dl_ui
                 vm => vm.Flows ,
                 v => v.ComboBoxFlows.ItemsSource )
                 .DisposeWith( disposables );
+
+            view.Bind( viewModel ,
+                    vm => vm.ActiveFlow ,
+                    v => v.ComboBoxFlows.SelectedItem )
+                .DisposeWith( disposables );
+
+            view.DimensionsOrderingViewHost.ViewModel = viewModel.DimensionsOrderingViewModel;
         }
     }
 }

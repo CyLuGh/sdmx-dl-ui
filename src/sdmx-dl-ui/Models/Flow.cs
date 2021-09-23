@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
 
 namespace sdmx_dl_ui.Models
 {
     public class Flow
     {
-        public string Ref { get; set; }
-        public string Label { get; set; }
+        private static Regex _regex = new Regex( @"(?<=\:)(.*?)(?=\()" );
+
+        public string Ref { get; init; }
+        public string Label { get; init; }
+
+        public string InputRef
+            => _regex.Match( Ref ).Value;
     }
 }

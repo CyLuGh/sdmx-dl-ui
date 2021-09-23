@@ -7,6 +7,8 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using ReactiveUI;
+using sdmx_dl_ui.Views;
 
 namespace sdmx_dl_ui
 {
@@ -15,6 +17,10 @@ namespace sdmx_dl_ui
         private void Application_Startup( object sender , StartupEventArgs e )
         {
             Locator.CurrentMutable.RegisterConstant( new ScriptsViewModel() );
+
+            Locator.CurrentMutable.Register( () => new DimensionsOrderingView() , typeof( IViewFor<DimensionsOrderingViewModel> ) );
+            Locator.CurrentMutable.Register( () => new DimensionListView() , typeof( IViewFor<DimensionViewModel> ) , "List" );
+
         }
     }
 }

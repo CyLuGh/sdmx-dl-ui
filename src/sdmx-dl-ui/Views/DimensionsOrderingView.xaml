@@ -1,0 +1,54 @@
+﻿<rxui:ReactiveUserControl x:Class="sdmx_dl_ui.Views.DimensionsOrderingView"
+                          x:TypeArguments="viewModels:DimensionsOrderingViewModel"
+                          xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                          xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                          xmlns:rxui="http://reactiveui.net"
+                          xmlns:local="clr-namespace:sdmx_dl_ui.Views"
+                          xmlns:viewModels="clr-namespace:sdmx_dl_ui.ViewModels"
+                          xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+                          mc:Ignorable="d"
+                          d:DesignHeight="450"
+                          d:DesignWidth="800">
+    <TabControl>
+        <TabItem Header="Explorer"></TabItem>
+        <TabItem Header="Dimensions">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <ListBox x:Name="ListBoxDimensions"
+                         Margin="2">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <rxui:ViewModelViewHost ViewContract="List"
+                                                    ViewModel="{Binding}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <UniformGrid Rows="1"
+                             Grid.Row="1">
+                    <Button x:Name="ButtonForward"
+                            Style="{DynamicResource MaterialDesignFlatMidBgButton}"
+                            Margin="5">
+                        <materialDesign:PackIcon Kind="ChevronDoubleUp"
+                                                 Height="24"
+                                                 Width="24" />
+                    </Button>
+                    <Button x:Name="ButtonBackward"
+                            Style="{DynamicResource MaterialDesignFlatMidBgButton}"
+                            Margin="5">
+                        <materialDesign:PackIcon Kind="ChevronDoubleDown"
+                                                 Height="24"
+                                                 Width="24" />
+                    </Button>
+                </UniformGrid>
+            </Grid>
+        </TabItem>
+
+    </TabControl>
+</rxui:ReactiveUserControl>

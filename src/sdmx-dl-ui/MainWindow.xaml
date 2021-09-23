@@ -4,6 +4,7 @@
                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+                 xmlns:rxui="http://reactiveui.net"
                  xmlns:local="clr-namespace:sdmx_dl_ui"
                  xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
                  mc:Ignorable="d"
@@ -39,10 +40,20 @@
             <GroupBox Header="FLOWS"
                       Style="{DynamicResource MaterialDesignCardGroupBox}"
                       Margin="5"
-                      Grid.Row="1">
+                      Grid.Row="1"
+                      Grid.Column="0">
                 <ComboBox x:Name="ComboBoxFlows"
                           DisplayMemberPath="Label" />
             </GroupBox>
+
+            <rxui:ViewModelViewHost x:Name="DimensionsOrderingViewHost"
+                                    Margin="5"
+                                    Grid.Row="2"
+                                    Grid.Column="0"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"
+                                    HorizontalContentAlignment="Stretch"
+                                    VerticalContentAlignment="Stretch" />
         </Grid>
 
         <materialDesign:ColorZone Mode="Dark"
