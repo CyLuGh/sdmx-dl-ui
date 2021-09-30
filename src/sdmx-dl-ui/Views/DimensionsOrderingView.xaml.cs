@@ -45,6 +45,11 @@ namespace sdmx_dl_ui.Views
                     v => v.ButtonBackward ,
                     viewModel.WhenAnyValue( x => x.SelectedDimension ) )
                 .DisposeWith( disposables );
+
+            view.OneWayBind( viewModel ,
+                vm => vm.Hierarchies ,
+                v => v.TreeViewDimensions.ItemsSource )
+                .DisposeWith( disposables );
         }
     }
 }

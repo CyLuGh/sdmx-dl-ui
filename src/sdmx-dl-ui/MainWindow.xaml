@@ -34,7 +34,8 @@
                       Style="{DynamicResource MaterialDesignCardGroupBox}"
                       Margin="5">
                 <ComboBox x:Name="ComboBoxSources"
-                          DisplayMemberPath="Description" />
+                          DisplayMemberPath="Description"
+                          Style="{DynamicResource MahApps.Styles.ComboBox}" />
             </GroupBox>
 
             <GroupBox Header="FLOWS"
@@ -43,7 +44,8 @@
                       Grid.Row="1"
                       Grid.Column="0">
                 <ComboBox x:Name="ComboBoxFlows"
-                          DisplayMemberPath="Label" />
+                          DisplayMemberPath="Label"
+                          Style="{DynamicResource MahApps.Styles.ComboBox}" />
             </GroupBox>
 
             <rxui:ViewModelViewHost x:Name="DimensionsOrderingViewHost"

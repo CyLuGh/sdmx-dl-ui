@@ -40,6 +40,9 @@ namespace sdmx_dl_ui.ViewModels
 
             InitializeCommands( this );
 
+            BuildHierarchiesCommand
+                .ToPropertyEx( this , x => x.Hierarchies , scheduler: RxApp.MainThreadScheduler );
+
             this.WhenActivated( disposables =>
             {
                 DimensionsCache.Connect()
@@ -65,6 +68,7 @@ namespace sdmx_dl_ui.ViewModels
                             .Throttle( TimeSpan.FromMilliseconds( 50 ) )
                             .Select( _ => DimensionsCache.Items
                                 .Where( x => x.Type.Equals( "dimension" , StringComparison.InvariantCultureIgnoreCase ) )
+                                .OrderBy( x => x.DesiredPosition )
                                 .ToArray() )
                             .InvokeCommand( BuildHierarchiesCommand )
                             .DisposeWith( disposables );
@@ -97,6 +101,7 @@ namespace sdmx_dl_ui.ViewModels
                 .Select( x => x.First )
                 .ObserveOn( RxApp.MainThreadScheduler )
                 .Select( x => x != null && x.DesiredPosition < @this.Dimensions.Count );
+
             @this.BackwardPositionCommand = ReactiveCommand.Create( ( DimensionViewModel dim ) =>
                 {
                     @this.Dimensions.First( x => x.DesiredPosition == dim.DesiredPosition + 1 )
@@ -105,10 +110,7 @@ namespace sdmx_dl_ui.ViewModels
                 } , canBackward );
 
             @this.BuildHierarchiesCommand = ReactiveCommand.CreateFromObservable( ( DimensionViewModel[] dimensions ) =>
-                Observable.Start( () =>
-                {
-                    return Array.Empty<HierarchicalCodeLabelViewModel>();
-                } )
+                Observable.Start( () => HierarchyBuilder.Build( dimensions ) )
             );
         }
     }
