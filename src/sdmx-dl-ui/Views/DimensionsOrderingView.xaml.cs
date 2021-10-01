@@ -50,6 +50,11 @@ namespace sdmx_dl_ui.Views
                 vm => vm.Hierarchies ,
                 v => v.TreeViewDimensions.ItemsSource )
                 .DisposeWith( disposables );
+
+            view.Bind( viewModel ,
+                    vm => vm.SelectedHierarchicalCode ,
+                    v => v.TreeViewDimensions.SelectedItem )
+                .DisposeWith( disposables );
         }
     }
 }

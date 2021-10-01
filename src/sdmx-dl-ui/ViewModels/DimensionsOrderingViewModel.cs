@@ -12,6 +12,7 @@ using DynamicData.Binding;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using sdmx_dl_ui.Models;
+using Splat;
 
 namespace sdmx_dl_ui.ViewModels
 {
@@ -23,16 +24,20 @@ namespace sdmx_dl_ui.ViewModels
             = new SourceCache<DimensionViewModel , (Source, Flow, string)>( s => (s.Source, s.Flow, s.Concept) );
 
         [Reactive] public DimensionViewModel SelectedDimension { get; set; }
+        [Reactive] public string[][] KeysOccurrences { get; set; }
+
+        public bool IsRetrievingCodes { [ObservableAsProperty] get; }
 
         private ReadOnlyObservableCollection<DimensionViewModel> _dimensions;
         public ReadOnlyObservableCollection<DimensionViewModel> Dimensions => _dimensions;
 
         public HierarchicalCodeLabelViewModel[] Hierarchies { [ObservableAsProperty] get; }
+        [Reactive] public HierarchicalCodeLabelViewModel SelectedHierarchicalCode { get; set; }
 
         public ReactiveCommand<DimensionViewModel , Unit> ForwardPositionCommand { get; private set; }
         public ReactiveCommand<DimensionViewModel , Unit> BackwardPositionCommand { get; private set; }
 
-        public ReactiveCommand<DimensionViewModel[] , HierarchicalCodeLabelViewModel[]> BuildHierarchiesCommand { get; private set; }
+        public ReactiveCommand<(DimensionViewModel[], string[][]) , HierarchicalCodeLabelViewModel[]> BuildHierarchiesCommand { get; private set; }
 
         public DimensionsOrderingViewModel()
         {
@@ -56,6 +61,14 @@ namespace sdmx_dl_ui.ViewModels
                     .DisposeWith( disposables );
 
                 DimensionsCache.Connect()
+                    .AutoRefresh( x => x.IsRetrievingCodes )
+                    .Throttle( TimeSpan.FromMilliseconds( 20 ) )
+                    .DisposeMany()
+                    .Select( _ => DimensionsCache.Items.Any( x => x.IsRetrievingCodes ) )
+                    .ToPropertyEx( this , x => x.IsRetrievingCodes , scheduler: RxApp.MainThreadScheduler )
+                    .DisposeWith( disposables );
+
+                DimensionsCache.Connect()
                     .Filter( x => x.Type.Equals( "dimension" , StringComparison.InvariantCultureIgnoreCase ) )
                     .DisposeMany()
                     .Do( _ =>
@@ -70,6 +83,9 @@ namespace sdmx_dl_ui.ViewModels
                                 .Where( x => x.Type.Equals( "dimension" , StringComparison.InvariantCultureIgnoreCase ) )
                                 .OrderBy( x => x.DesiredPosition )
                                 .ToArray() )
+                            .CombineLatest( this.WhenAnyValue( x => x.KeysOccurrences ) )
+                            .Where( t => t.First?.Any() == true && t.Second?.Any() == true )
+                            .Throttle( TimeSpan.FromMilliseconds( 150 ) )
                             .InvokeCommand( BuildHierarchiesCommand )
                             .DisposeWith( disposables );
                     } )
@@ -109,8 +125,8 @@ namespace sdmx_dl_ui.ViewModels
                     dim.DesiredPosition++;
                 } , canBackward );
 
-            @this.BuildHierarchiesCommand = ReactiveCommand.CreateFromObservable( ( DimensionViewModel[] dimensions ) =>
-                Observable.Start( () => HierarchyBuilder.Build( dimensions ) )
+            @this.BuildHierarchiesCommand = ReactiveCommand.CreateFromObservable( ( (DimensionViewModel[], string[][]) t ) =>
+                Observable.Start( () => HierarchyBuilder.Build( t.Item1 , t.Item2 ) )
             );
         }
     }

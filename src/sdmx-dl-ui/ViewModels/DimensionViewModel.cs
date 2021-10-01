@@ -6,6 +6,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media.Animation;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using sdmx_dl_ui.Models;
@@ -27,6 +28,7 @@ namespace sdmx_dl_ui.ViewModels
         public CodeLabel[] Values { [ObservableAsProperty] get; }
 
         internal ReactiveCommand<(Source, Flow, string) , CodeLabel[]> RetrieveCodesCommand { get; private set; }
+        public bool IsRetrievingCodes { [ObservableAsProperty] get; }
 
         public DimensionViewModel()
         {
@@ -34,6 +36,10 @@ namespace sdmx_dl_ui.ViewModels
 
             RetrieveCodesCommand
                 .ToPropertyEx( this , x => x.Values , scheduler: RxApp.MainThreadScheduler );
+
+            RetrieveCodesCommand
+                .IsExecuting
+                .ToPropertyEx( this , x => x.IsRetrievingCodes , scheduler: RxApp.MainThreadScheduler );
 
             this.WhenAnyValue( x => x.Source , x => x.Flow , x => x.Concept , x => x.Coded )
                 .Throttle( TimeSpan.FromMilliseconds( 50 ) )

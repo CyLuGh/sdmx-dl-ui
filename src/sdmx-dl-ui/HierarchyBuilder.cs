@@ -9,38 +9,43 @@ namespace sdmx_dl_ui
 {
     internal static class HierarchyBuilder
     {
-        internal static HierarchicalCodeLabelViewModel[] Build( DimensionViewModel[] dimensions )
+        internal static HierarchicalCodeLabelViewModel[] Build( IEnumerable<DimensionViewModel> dimensions , string[][] keysOccurrences )
         {
-            if ( dimensions.Length == 0 )
+            if ( !dimensions.Any() )
                 return Array.Empty<HierarchicalCodeLabelViewModel>();
 
-            var orderedDimensions = dimensions.OrderBy( x => x.DesiredPosition ).ToArray();
-            var remaining = orderedDimensions.Skip( 1 ).ToArray();
-            return orderedDimensions[0]
-                .Values
-                .Select( o =>
-                {
-                    var hclvm = new HierarchicalCodeLabelViewModel { Label = o.Label , Code = o.Code };
-                    //hclvm.Children = Build( hclvm , string.Empty , remaining );
-                    return hclvm;
-                } )
-                .ToArray();
+            var key = string.Join( "." , Enumerable.Range( 0 , dimensions.Count() )
+                .Select( _ => string.Empty ) );
+
+            return Build( key , 1 , dimensions , keysOccurrences );
         }
 
-        private static HierarchicalCodeLabelViewModel[] Build( HierarchicalCodeLabelViewModel parent , string key , DimensionViewModel[] remainingDimensions )
+        internal static HierarchicalCodeLabelViewModel[] Build( string key , int desiredPosition ,
+            IEnumerable<DimensionViewModel> dimensions , string[][] keysOccurrences )
         {
-            if ( remainingDimensions.Length == 0 )
+            var dimensionViewModels = dimensions as DimensionViewModel[] ?? dimensions.ToArray();
+
+            if ( desiredPosition > dimensionViewModels.Length )
                 return Array.Empty<HierarchicalCodeLabelViewModel>();
 
-            var remaining = remainingDimensions.Skip( 1 ).ToArray();
-            return remainingDimensions[0].Values
-                        .Select( o =>
-                        {
-                            var hclvm = new HierarchicalCodeLabelViewModel { Label = o.Label };
-                            // hclvm.Children = Build( hclvm , string.Empty , remaining );
-                            return hclvm;
-                        } )
-                        .ToArray();
+            var orderedDimensions = dimensionViewModels.OrderBy( x => x.DesiredPosition ).ToArray();
+            var dim = orderedDimensions[desiredPosition - 1];
+            return dim
+                .Values
+                //.Where( o => keysOccurrences[dim.Position - 1].Length == 0 || keysOccurrences[dim.Position - 1].Contains( o.Code ) )
+                .OrderBy( o => o.Code )
+                .Select( o =>
+                {
+                    var splits = key.Split( '.' );
+                    splits[desiredPosition - 1] = o.Code;
+                    return new HierarchicalCodeLabelViewModel( desiredPosition != dimensionViewModels.Length )
+                    {
+                        Label = o.Label ,
+                        Code = string.Join( "." , splits ) ,
+                        Position = desiredPosition
+                    };
+                } )
+                .ToArray();
         }
     }
 }

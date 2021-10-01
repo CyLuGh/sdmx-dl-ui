@@ -9,6 +9,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DynamicData;
 
 namespace sdmx_dl_ui.ViewModels
 {
@@ -22,6 +23,7 @@ namespace sdmx_dl_ui.ViewModels
         [Reactive] public string Code { get; init; }
         [Reactive] public string Label { get; init; }
         [Reactive] public bool IsExpanded { get; set; }
+        public int Position { get; init; }
         public ObservableCollection<HierarchicalCodeLabelViewModel> Children { get; }
 
         public bool HasDummyChild
@@ -56,6 +58,9 @@ namespace sdmx_dl_ui.ViewModels
         private void LoadChildren()
         {
             this.Log().Debug( "LoadChildren" );
+            var dovm = Locator.Current.GetService<ScriptsViewModel>().DimensionsOrderingViewModel;
+            Children.AddRange( HierarchyBuilder.Build( Code , Position + 1 ,
+                dovm.Dimensions , dovm.KeysOccurrences ) );
         }
 
         public bool Equals( HierarchicalCodeLabelViewModel other )

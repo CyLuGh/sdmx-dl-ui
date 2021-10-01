@@ -19,7 +19,7 @@
 
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"
+                <ColumnDefinition Width="400"
                                   MinWidth="350" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
@@ -56,13 +56,25 @@
                                     VerticalAlignment="Stretch"
                                     HorizontalContentAlignment="Stretch"
                                     VerticalContentAlignment="Stretch" />
+
+            <GridSplitter Width="2"
+                          Margin="5 15"
+                          ResizeBehavior="PreviousAndNext"
+                          ResizeDirection="Columns"
+                          Grid.Column="1"
+                          Grid.Row="0"
+                          Grid.RowSpan="3" />
         </Grid>
 
         <materialDesign:ColorZone Mode="Dark"
                                   Grid.Row="1">
             <DockPanel>
+                <TextBlock x:Name="TextBlockSelection"
+                           DockPanel.Dock="Left"
+                           Focusable="False" />
                 <TextBlock x:Name="TextBlockVersion"
-                           DockPanel.Dock="Right" />
+                           DockPanel.Dock="Right"
+                           Focusable="False" />
                 <Rectangle />
             </DockPanel>
         </materialDesign:ColorZone>

@@ -69,6 +69,11 @@ namespace sdmx_dl_ui
                     v => v.ComboBoxFlows.SelectedItem )
                 .DisposeWith( disposables );
 
+            view.OneWayBind( viewModel ,
+                    vm => vm.ResultingKey ,
+                    v => v.TextBlockSelection.Text )
+                .DisposeWith( disposables );
+
             view.DimensionsOrderingViewHost.ViewModel = viewModel.DimensionsOrderingViewModel;
         }
     }

@@ -7,6 +7,7 @@
                           xmlns:rxui="http://reactiveui.net"
                           xmlns:local="clr-namespace:sdmx_dl_ui.Views"
                           xmlns:viewModels="clr-namespace:sdmx_dl_ui.ViewModels"
+                          xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
                           mc:Ignorable="d"
                           d:DesignHeight="450"
                           d:DesignWidth="800">
@@ -15,10 +16,22 @@
             <ColumnDefinition Width="24" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
         <TextBlock x:Name="TextBlockPosition"
-                   Grid.Column="0" />
+                   Grid.Column="0"
+                   Grid.Row="0" />
         <TextBlock x:Name="TextBlockDescription"
-                   Grid.Column="1" />
+                   Grid.Column="1"
+                   Grid.Row="0" />
+        <mah:MetroProgressBar x:Name="ProgressBar"
+                              IsIndeterminate="True"
+                              Grid.Column="1"
+                              Grid.Row="1"
+                              VerticalAlignment="Center"
+                              HorizontalAlignment="Stretch" />
     </Grid>
 </rxui:ReactiveUserControl>

@@ -47,6 +47,12 @@ namespace sdmx_dl_ui.Views
                     vm => vm.Label ,
                     v => v.TextBlockDescription.Text )
                 .DisposeWith( disposables );
+
+            view.OneWayBind( viewModel ,
+                    vm => vm.IsRetrievingCodes ,
+                    v => v.ProgressBar.Visibility ,
+                    b => b ? Visibility.Visible : Visibility.Collapsed )
+                .DisposeWith( disposables );
         }
     }
 }
