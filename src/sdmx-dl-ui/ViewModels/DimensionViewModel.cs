@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Media.Animation;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using sdmx_dl_ui.Exceptions;
 using sdmx_dl_ui.Models;
 using Splat;
 
@@ -16,8 +17,8 @@ namespace sdmx_dl_ui.ViewModels
 {
     public class DimensionViewModel : ReactiveObject, IEquatable<DimensionViewModel>
     {
-        [Reactive] public Source Source { get; set; }
-        [Reactive] public Flow Flow { get; set; }
+        [Reactive] public string Source { get; set; }
+        [Reactive] public string Flow { get; set; }
         [Reactive] public string Concept { get; set; }
         public string Type { get; init; }
         public string Label { get; init; }
@@ -27,7 +28,7 @@ namespace sdmx_dl_ui.ViewModels
         [Reactive] public int DesiredPosition { get; set; }
         public CodeLabel[] Values { [ObservableAsProperty] get; }
 
-        internal ReactiveCommand<(Source, Flow, string) , CodeLabel[]> RetrieveCodesCommand { get; private set; }
+        internal ReactiveCommand<(string, string, string) , CodeLabel[]> RetrieveCodesCommand { get; private set; }
         public bool IsRetrievingCodes { [ObservableAsProperty] get; }
 
         public DimensionViewModel()
@@ -51,12 +52,25 @@ namespace sdmx_dl_ui.ViewModels
 
         private static void InitializeCommands( DimensionViewModel @this )
         {
-            @this.RetrieveCodesCommand = ReactiveCommand.CreateFromObservable( ( (Source, Flow, string) t ) =>
+            @this.RetrieveCodesCommand = ReactiveCommand.CreateFromObservable( ( (string, string, string) t ) =>
                  Observable.Start( () =>
                  {
+                     if ( @this.Values?.Any() == true )
+                         throw new DuplicateQueryException( "Shouldn't retrieve values again" );
+
                      var (source, flow, concept) = t;
-                     return PowerShellRunner.Query<CodeLabel>( "list" , "codes" , source.Name , flow.Ref , concept );
+                     return PowerShellRunner.Query<CodeLabel>( "list" , "codes" , source , flow , concept );
                  } ) );
+
+            @this.RetrieveCodesCommand
+                .ThrownExceptions
+                .Subscribe( exc =>
+                {
+                    if ( exc is DuplicateQueryException dqe )
+                    {
+                        /* Ignore */
+                    }
+                } );
         }
 
         public bool Equals( DimensionViewModel other )

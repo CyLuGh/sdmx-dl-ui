@@ -20,8 +20,8 @@ namespace sdmx_dl_ui.ViewModels
     {
         public ViewModelActivator Activator { get; }
 
-        internal SourceCache<DimensionViewModel , (Source, Flow, string)> DimensionsCache { get; }
-            = new SourceCache<DimensionViewModel , (Source, Flow, string)>( s => (s.Source, s.Flow, s.Concept) );
+        internal SourceCache<DimensionViewModel , (string, string, string)> DimensionsCache { get; }
+            = new SourceCache<DimensionViewModel , (string, string, string)>( s => (s.Source, s.Flow, s.Concept) );
 
         [Reactive] public DimensionViewModel SelectedDimension { get; set; }
         [Reactive] public string[][] KeysOccurrences { get; set; }
@@ -50,6 +50,8 @@ namespace sdmx_dl_ui.ViewModels
 
             this.WhenActivated( disposables =>
             {
+                IDisposable buildEvent = null;
+
                 DimensionsCache.Connect()
                     .AutoRefresh( x => x.DesiredPosition )
                     .Filter( x => x.Type.Equals( "dimension" , StringComparison.InvariantCultureIgnoreCase ) )
@@ -69,16 +71,29 @@ namespace sdmx_dl_ui.ViewModels
                     .DisposeWith( disposables );
 
                 DimensionsCache.Connect()
-                    .Filter( x => x.Type.Equals( "dimension" , StringComparison.InvariantCultureIgnoreCase ) )
+                    .Where( t => t.Adds == 0 )
                     .DisposeMany()
                     .Do( _ =>
                     {
-                        DimensionsCache.Items
+                        buildEvent?.Dispose();
+                        Observable.Return( (Array.Empty<DimensionViewModel>(), Array.Empty<string[]>()) )
+                            .InvokeCommand( BuildHierarchiesCommand );
+                    } )
+                    .Subscribe()
+                    .DisposeWith( disposables );
+
+                DimensionsCache.Connect()
+                    .Where( t => t.Removes == 0 )
+                    .Filter( x => x.Type.Equals( "dimension" , StringComparison.InvariantCultureIgnoreCase ) )
+                    .Throttle( TimeSpan.FromMilliseconds( 50 ) )
+                    .DisposeMany()
+                    .Do( _ =>
+                    {
+                        buildEvent = DimensionsCache.Items
                             .Where( x => x.Type.Equals( "dimension" , StringComparison.InvariantCultureIgnoreCase ) )
                             .Select( x => x.WhenAnyValue( o => o.DesiredPosition , o => o.Values ) )
                             .CombineLatest()
                             .Where( t => t.All( o => o.Item2?.Length > 0 ) )
-                            .Throttle( TimeSpan.FromMilliseconds( 50 ) )
                             .Select( _ => DimensionsCache.Items
                                 .Where( x => x.Type.Equals( "dimension" , StringComparison.InvariantCultureIgnoreCase ) )
                                 .OrderBy( x => x.DesiredPosition )
@@ -86,8 +101,7 @@ namespace sdmx_dl_ui.ViewModels
                             .CombineLatest( this.WhenAnyValue( x => x.KeysOccurrences ) )
                             .Where( t => t.First?.Any() == true && t.Second?.Any() == true )
                             .Throttle( TimeSpan.FromMilliseconds( 150 ) )
-                            .InvokeCommand( BuildHierarchiesCommand )
-                            .DisposeWith( disposables );
+                            .InvokeCommand( BuildHierarchiesCommand );
                     } )
                     .Subscribe()
                     .DisposeWith( disposables );

@@ -117,14 +117,15 @@ namespace sdmx_dl_ui.ViewModels
                     .ObserveOn( RxApp.TaskpoolScheduler )
                     .Do( t =>
                     {
+                        // TODO: Fix updates => dimensions should have been cleared on active flow change
                         var (source, flow, dimensions) = t;
                         DimensionsOrderingViewModel.DimensionsCache.Clear();
                         DimensionsOrderingViewModel.DimensionsCache.Edit( e =>
                         {
                             e.AddOrUpdate( dimensions.Select( d => new DimensionViewModel
                             {
-                                Source = source ,
-                                Flow = flow ,
+                                Source = source.Name ,
+                                Flow = flow.Ref ,
                                 Concept = d.Concept ,
                                 Type = d.Type ,
                                 Label = d.Label ,
