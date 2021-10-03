@@ -107,25 +107,20 @@ namespace sdmx_dl_ui.ViewModels
                     .InvokeCommand( RetrieveDimensionsCommand )
                     .DisposeWith( disposables );
 
-                this.WhenAnyValue( x => x.ActiveSource , x => x.ActiveFlow , x => x.Dimensions )
-                    .Where( t => t.Item1 != null && t.Item2 != null && t.Item3 != null )
-                    .InvokeCommand( RetrieveKeysCommand )
-                    .DisposeWith( disposables );
-
-                this.WhenAnyValue( x => x.ActiveSource , x => x.ActiveFlow , x => x.Dimensions )
-                    .Where( t => t.Item1 != null && t.Item2 != null && t.Item3 != null )
+                this.WhenAnyValue( x => x.Dimensions )
                     .ObserveOn( RxApp.TaskpoolScheduler )
-                    .Do( t =>
+                    .Do( dimensions =>
                     {
-                        // TODO: Fix updates => dimensions should have been cleared on active flow change
-                        var (source, flow, dimensions) = t;
                         DimensionsOrderingViewModel.DimensionsCache.Clear();
-                        DimensionsOrderingViewModel.DimensionsCache.Edit( e =>
+                        if ( dimensions != null )
                         {
-                            e.AddOrUpdate( dimensions.Select( d => new DimensionViewModel
+                            Observable.Return( (ActiveSource, ActiveFlow, dimensions) )
+                                .InvokeCommand( RetrieveKeysCommand );
+
+                            DimensionsOrderingViewModel.DimensionsCache.AddOrUpdate( dimensions?.Select( d => new DimensionViewModel
                             {
-                                Source = source.Name ,
-                                Flow = flow.Ref ,
+                                Source = this.ActiveSource.Name ,
+                                Flow = this.ActiveFlow.Ref ,
                                 Concept = d.Concept ,
                                 Type = d.Type ,
                                 Label = d.Label ,
@@ -133,7 +128,7 @@ namespace sdmx_dl_ui.ViewModels
                                 Position = d.Position.HasValue ? d.Position.Value : 0 ,
                                 DesiredPosition = d.Position.HasValue ? d.Position.Value : 0
                             } ) );
-                        } );
+                        }
                     } )
                     .Subscribe()
                     .DisposeWith( disposables );

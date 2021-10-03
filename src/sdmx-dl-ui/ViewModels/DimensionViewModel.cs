@@ -20,7 +20,7 @@ namespace sdmx_dl_ui.ViewModels
         [Reactive] public string Source { get; set; }
         [Reactive] public string Flow { get; set; }
         [Reactive] public string Concept { get; set; }
-        public string Type { get; init; }
+        [Reactive] public string Type { get; set; }
         public string Label { get; init; }
         [Reactive] public bool Coded { get; set; }
         public int Position { get; init; }
@@ -42,10 +42,11 @@ namespace sdmx_dl_ui.ViewModels
                 .IsExecuting
                 .ToPropertyEx( this , x => x.IsRetrievingCodes , scheduler: RxApp.MainThreadScheduler );
 
-            this.WhenAnyValue( x => x.Source , x => x.Flow , x => x.Concept , x => x.Coded )
+            this.WhenAnyValue( x => x.Source , x => x.Flow , x => x.Concept , x => x.Coded , x => x.Type )
                 .Throttle( TimeSpan.FromMilliseconds( 50 ) )
                 .DistinctUntilChanged()
-                .Where( t => t.Item4 && t.Item1 != null && t.Item2 != null && !string.IsNullOrEmpty( t.Item3 ) )
+                .Where( t => t.Item5?.Equals( "dimension" , StringComparison.InvariantCultureIgnoreCase ) == true
+                            && t.Item4 && t.Item1 != null && t.Item2 != null && !string.IsNullOrEmpty( t.Item3 ) )
                 .Select( t => (t.Item1, t.Item2, t.Item3) )
                 .InvokeCommand( RetrieveCodesCommand );
         }
