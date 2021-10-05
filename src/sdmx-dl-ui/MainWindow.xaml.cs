@@ -74,6 +74,12 @@ namespace sdmx_dl_ui
                     v => v.TextBlockSelection.Text )
                 .DisposeWith( disposables );
 
+            view.BindCommand( viewModel ,
+                vm => vm.CopyToClipboardCommand ,
+                v => v.ButtonCopy ,
+                viewModel.WhenAnyValue( x => x.ResultingKey ) )
+                .DisposeWith( disposables );
+
             view.DimensionsOrderingViewHost.ViewModel = viewModel.DimensionsOrderingViewModel;
         }
     }

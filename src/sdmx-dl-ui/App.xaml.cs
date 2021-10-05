@@ -25,6 +25,7 @@ namespace sdmx_dl_ui
             Locator.CurrentMutable.Register( () => new DimensionsOrderingView() , typeof( IViewFor<DimensionsOrderingViewModel> ) );
             Locator.CurrentMutable.Register( () => new DimensionListView() , typeof( IViewFor<DimensionViewModel> ) , "List" );
             Locator.CurrentMutable.Register( () => new HierarchicalCodeLabelView() , typeof( IViewFor<HierarchicalCodeLabelViewModel> ) );
+            Locator.CurrentMutable.Register( () => new SeriesDisplayView() , typeof( IViewFor<SeriesDisplayViewModel> ) );
         }
 
         private static void ConfigureLogs()

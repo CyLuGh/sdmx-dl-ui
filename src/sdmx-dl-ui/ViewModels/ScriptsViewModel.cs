@@ -9,6 +9,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using DynamicData;
 using Splat;
+using System.Windows;
 
 namespace sdmx_dl_ui.ViewModels
 {
@@ -35,6 +36,7 @@ namespace sdmx_dl_ui.ViewModels
         public ReactiveCommand<Source , Flow[]> RetrieveFlowsCommand { get; private set; }
         public ReactiveCommand<(Source, Flow) , Dimension[]> RetrieveDimensionsCommand { get; private set; }
         public ReactiveCommand<(Source, Flow, Dimension[]) , string[][]> RetrieveKeysCommand { get; private set; }
+        public ReactiveCommand<string , Unit> CopyToClipboardCommand { get; private set; }
 
         internal DimensionsOrderingViewModel DimensionsOrderingViewModel { get; }
 
@@ -201,6 +203,14 @@ namespace sdmx_dl_ui.ViewModels
                         .Select( i => splits.Select( s => s[i] ).Distinct().ToArray() )
                         .ToArray();
                 } ) );
+
+            var canCopy = @this.WhenAnyValue( x => x.ResultingKey )
+                .Select( key => !string.IsNullOrWhiteSpace( key ) )
+                .ObserveOn( RxApp.MainThreadScheduler );
+            @this.CopyToClipboardCommand = ReactiveCommand.Create( ( string key ) =>
+            {
+                Clipboard.SetText( key );
+            } , canCopy );
         }
     }
 }
