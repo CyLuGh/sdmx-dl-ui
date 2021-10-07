@@ -24,9 +24,8 @@
                        TextAlignment="Center"
                        TextWrapping="Wrap" />
         </Border>
-        <mah:MetroAnimatedTabControl x:Name="AnimatedTabControl"
-                                     mah:TabControlHelper.Underlined="TabPanel"
-                                     Margin="10">
-        </mah:MetroAnimatedTabControl>
+        <TabControl x:Name="TabControl"
+                    Margin="10">
+        </TabControl>
     </Grid>
 </rxui:ReactiveUserControl>

@@ -1,19 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using ReactiveUI;
 using sdmx_dl_ui.ViewModels;
 
@@ -24,6 +13,8 @@ namespace sdmx_dl_ui.Views
         public SeriesDisplayView()
         {
             InitializeComponent();
+
+            CartesianChart.ZoomMode = LiveChartsCore.Measure.ZoomAndPanMode.X;
 
             this.WhenActivated( disposables =>
             {
@@ -44,9 +35,19 @@ namespace sdmx_dl_ui.Views
                 .DisposeWith( disposables );
 
             view.OneWayBind( viewModel ,
-                    vm => vm.isWorking ,
+                    vm => vm.IsWorking ,
                     v => v.BorderWorking.Visibility ,
                     b => b ? Visibility.Visible : Visibility.Collapsed )
+                .DisposeWith( disposables );
+
+            view.OneWayBind( viewModel ,
+                    vm => vm.Data ,
+                    v => v.DataGrid.ItemsSource )
+                .DisposeWith( disposables );
+
+            view.OneWayBind( viewModel ,
+                    vm => vm.LineSeries ,
+                    v => v.CartesianChart.Series )
                 .DisposeWith( disposables );
         }
     }

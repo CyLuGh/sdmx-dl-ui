@@ -10,6 +10,7 @@ using System.Windows;
 using ReactiveUI;
 using sdmx_dl_ui.Views;
 using Splat.NLog;
+using LiveChartsCore.SkiaSharpView;
 
 namespace sdmx_dl_ui
 {
@@ -27,6 +28,8 @@ namespace sdmx_dl_ui
             Locator.CurrentMutable.Register( () => new HierarchicalCodeLabelView() , typeof( IViewFor<HierarchicalCodeLabelViewModel> ) );
             Locator.CurrentMutable.Register( () => new MainDisplayView() , typeof( IViewFor<MainDisplayViewModel> ) );
             Locator.CurrentMutable.Register( () => new SeriesDisplayView() , typeof( IViewFor<SeriesDisplayViewModel> ) );
+
+            LiveChartsSkiaSharp.DefaultPlatformBuilder( LiveChartsCore.LiveCharts.CurrentSettings );
         }
 
         private static void ConfigureLogs()

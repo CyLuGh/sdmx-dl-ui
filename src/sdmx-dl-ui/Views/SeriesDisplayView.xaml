@@ -7,7 +7,7 @@
                           xmlns:rxui="http://reactiveui.net"
                           xmlns:local="clr-namespace:sdmx_dl_ui.Views"
                           xmlns:viewmodels="clr-namespace:sdmx_dl_ui.ViewModels"
-                          xmlns:oxyplot="http://oxyplot.org/wpf"
+                          xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
                           Background="{DynamicResource MaterialDesignBackground}"
                           mc:Ignorable="d"
                           d:DesignHeight="450"
@@ -19,10 +19,29 @@
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <oxyplot:PlotView Margin="5" />
-        <DataGrid BorderThickness="1"
+        <lvc:CartesianChart x:Name="CartesianChart"
+                            Margin="5" />
+
+        <DataGrid x:Name="DataGrid"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  VirtualizingPanel.IsVirtualizing="True"
+                  VirtualizingPanel.VirtualizationMode="Recycling"
+                  BorderThickness="1"
                   Margin="5"
-                  Grid.Row="2"></DataGrid>
+                  Grid.Row="2">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Series"
+                                    Binding="{Binding Path=Series}"
+                                    Width="*" />
+                <DataGridTextColumn Header="Period"
+                                    Binding="{Binding Path=ObsPeriod}"
+                                    Width="*" />
+                <DataGridTextColumn Header="Value"
+                                    Binding="{Binding Path=ObsValue}"
+                                    Width="*" />
+            </DataGrid.Columns>
+        </DataGrid>
 
         <GridSplitter Height="2"
                       ResizeDirection="Rows"
@@ -32,6 +51,7 @@
                       Grid.Row="1" />
 
         <Border x:Name="BorderWorking"
+                Visibility="Collapsed"
                 Margin="4"
                 BorderThickness="1"
                 BorderBrush="{DynamicResource MaterialDesignTextBoxBorder}"
@@ -47,6 +67,7 @@
         </Border>
 
         <Border x:Name="BorderError"
+                Visibility="Collapsed"
                 Margin="4"
                 BorderThickness="1"
                 BorderBrush="{DynamicResource MaterialDesignTextBoxBorder}"

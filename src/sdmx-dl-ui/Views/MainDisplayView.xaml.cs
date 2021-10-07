@@ -50,26 +50,26 @@ namespace sdmx_dl_ui.Views
 
             view.OneWayBind( viewModel ,
                     vm => vm.HasItems ,
-                    v => v.AnimatedTabControl.Visibility ,
+                    v => v.TabControl.Visibility ,
                     b => b ? Visibility.Visible : Visibility.Collapsed )
                 .DisposeWith( disposables );
 
             viewModel.CreateTabItemInteraction.RegisterHandler( ctx =>
                 {
-                    var tabItem = new MetroTabItem
+                    var tabItem = new TabItem
                     {
                         Header = ctx.Input.Key ,
                         Content = new ViewModelViewHost
                         {
                             ViewModel = ctx.Input ,
-                            HorizontalContentAlignment = HorizontalAlignment.Stretch,
-                            HorizontalAlignment = HorizontalAlignment.Stretch,
+                            HorizontalContentAlignment = HorizontalAlignment.Stretch ,
+                            HorizontalAlignment = HorizontalAlignment.Stretch ,
                             VerticalContentAlignment = VerticalAlignment.Stretch ,
                             VerticalAlignment = VerticalAlignment.Stretch
                         }
                     };
-                    view.AnimatedTabControl.Items.Add( tabItem );
-                    view.AnimatedTabControl.SelectedItem = tabItem;
+                    view.TabControl.Items.Add( tabItem );
+                    view.TabControl.SelectedItem = tabItem;
                     ctx.SetOutput( Unit.Default );
                 } )
                 .DisposeWith( disposables );
