@@ -37,6 +37,12 @@ namespace sdmx_dl_ui
             var res = query.Invoke()
                 .Select( p => p.ToString() )
                 .ToArray();
+
+            if ( query.HadErrors )
+            {
+                throw new ApplicationException( $"Query >>sdmx-dl {string.Join( " " , arguments )}<< had errors:{Environment.NewLine}{string.Join( Environment.NewLine , query.Streams.Error.Select( e => e.Exception.Message ) )}" );
+            }
+
             var strOutput = string.Join( Environment.NewLine , res );
 
             var list = new List<T>();

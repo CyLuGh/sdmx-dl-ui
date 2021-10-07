@@ -1,0 +1,78 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+using MahApps.Metro.Controls;
+using ReactiveUI;
+using sdmx_dl_ui.ViewModels;
+
+namespace sdmx_dl_ui.Views
+{
+    public partial class MainDisplayView
+    {
+        public MainDisplayView()
+        {
+            InitializeComponent();
+
+            this.WhenActivated( disposables =>
+            {
+                this.WhenAnyValue( x => x.ViewModel )
+                    .WhereNotNull()
+                    .Do( vm => PopulateFromViewModel( this , vm , disposables ) )
+                    .Subscribe()
+                    .DisposeWith( disposables );
+            } );
+        }
+
+        private static void PopulateFromViewModel( MainDisplayView view , MainDisplayViewModel? viewModel , CompositeDisposable disposables )
+        {
+            GongSolutions.Wpf.DragDrop.DragDrop.SetIsDropTarget( view , true );
+            GongSolutions.Wpf.DragDrop.DragDrop.SetDropHandler( view , viewModel );
+
+            view.OneWayBind( viewModel ,
+                    vm => vm.HasItems ,
+                    v => v.BorderDrag.Visibility ,
+                    b => b ? Visibility.Collapsed : Visibility.Visible )
+                .DisposeWith( disposables );
+
+            view.OneWayBind( viewModel ,
+                    vm => vm.HasItems ,
+                    v => v.AnimatedTabControl.Visibility ,
+                    b => b ? Visibility.Visible : Visibility.Collapsed )
+                .DisposeWith( disposables );
+
+            viewModel.CreateTabItemInteraction.RegisterHandler( ctx =>
+                {
+                    var tabItem = new MetroTabItem
+                    {
+                        Header = ctx.Input.Key ,
+                        Content = new ViewModelViewHost
+                        {
+                            ViewModel = ctx.Input ,
+                            HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                            HorizontalAlignment = HorizontalAlignment.Stretch,
+                            VerticalContentAlignment = VerticalAlignment.Stretch ,
+                            VerticalAlignment = VerticalAlignment.Stretch
+                        }
+                    };
+                    view.AnimatedTabControl.Items.Add( tabItem );
+                    view.AnimatedTabControl.SelectedItem = tabItem;
+                    ctx.SetOutput( Unit.Default );
+                } )
+                .DisposeWith( disposables );
+        }
+    }
+}

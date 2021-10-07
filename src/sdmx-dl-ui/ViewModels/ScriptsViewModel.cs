@@ -10,6 +10,7 @@ using System.Reactive.Linq;
 using DynamicData;
 using Splat;
 using System.Windows;
+using sdmx_dl_ui.Views.Infrastructure;
 
 namespace sdmx_dl_ui.ViewModels
 {
@@ -39,11 +40,13 @@ namespace sdmx_dl_ui.ViewModels
         public ReactiveCommand<string , Unit> CopyToClipboardCommand { get; private set; }
 
         internal DimensionsOrderingViewModel DimensionsOrderingViewModel { get; }
+        internal KeyDragHandler KeyDragHandler { get; }
 
         public ScriptsViewModel()
         {
             Activator = new ViewModelActivator();
             DimensionsOrderingViewModel = new DimensionsOrderingViewModel();
+            KeyDragHandler = new KeyDragHandler();
 
             InitializeCommands( this );
 

@@ -15,20 +15,27 @@ namespace sdmx_dl_ui.ViewModels
     {
         [Reactive] public string Key { get; set; }
 
+        public bool isWorking { [ObservableAsProperty] get; }
+        public bool HasEncounteredError { [ObservableAsProperty] get; }
+
         internal ReactiveCommand<string , DataSeries[]> RetrieveDataSeriesCommand { get; private set; }
 
         public ViewModelActivator Activator { get; }
 
         public SeriesDisplayViewModel()
         {
+            Activator = new ViewModelActivator();
             InitializeCommands( this );
+
+            this.WhenAnyValue( x => x.Key )
+                .Where( s => !string.IsNullOrWhiteSpace( s ) && s.Split( ' ' ).Length == 3 )
+                .DistinctUntilChanged()
+                .InvokeCommand( RetrieveDataSeriesCommand );
 
             this.WhenActivated( disposables =>
             {
-                this.WhenAnyValue( x => x.Key )
-                    .Where( s => s.Split( ' ' ).Length == 3 )
-                    .DistinctUntilChanged()
-                    .InvokeCommand( RetrieveDataSeriesCommand )
+                RetrieveDataSeriesCommand.IsExecuting
+                    .ToPropertyEx( this , x => x.isWorking , scheduler: RxApp.MainThreadScheduler )
                     .DisposeWith( disposables );
             } );
         }
@@ -37,6 +44,10 @@ namespace sdmx_dl_ui.ViewModels
         {
             @this.RetrieveDataSeriesCommand = ReactiveCommand.CreateFromObservable( ( string key ) =>
                 Observable.Start( () => PowerShellRunner.Query<DataSeries>( new[] { "fetch" , "data" }.Concat( key.Split( ' ' ) ).ToArray() ) ) );
+
+            @this.RetrieveDataSeriesCommand.ThrownExceptions
+                .Select( _ => true )
+                .ToPropertyEx( @this , x => x.HasEncounteredError , scheduler: RxApp.MainThreadScheduler );
         }
     }
 }

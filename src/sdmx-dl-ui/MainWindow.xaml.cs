@@ -81,6 +81,10 @@ namespace sdmx_dl_ui
                 .DisposeWith( disposables );
 
             view.DimensionsOrderingViewHost.ViewModel = viewModel.DimensionsOrderingViewModel;
+            view.MainDisplayViewHost.ViewModel = new MainDisplayViewModel();
+
+            GongSolutions.Wpf.DragDrop.DragDrop.SetIsDragSource( view.TextBlockSelection , true );
+            GongSolutions.Wpf.DragDrop.DragDrop.SetDragHandler( view.TextBlockSelection , viewModel.KeyDragHandler );
         }
     }
 }
