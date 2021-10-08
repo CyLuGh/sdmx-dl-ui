@@ -12,20 +12,27 @@
                           mc:Ignorable="d"
                           d:DesignHeight="450"
                           d:DesignWidth="800">
-    <Grid>
-        <Border x:Name="BorderDrag"
-                BorderBrush="{DynamicResource MaterialDesignTextBoxBorder}"
-                BorderThickness="2"
-                Margin="10">
-            <TextBlock Text="Drag series here"
-                       Style="{DynamicResource MaterialDesignHeadline5TextBlock}"
-                       VerticalAlignment="Center"
-                       HorizontalAlignment="Center"
-                       TextAlignment="Center"
-                       TextWrapping="Wrap" />
-        </Border>
-        <TabControl x:Name="TabControl"
+    <Border Padding="5"
+            CornerRadius="5"
+            BorderThickness="1"
+            BorderBrush="{DynamicResource MaterialDesignDivider}"
+            Background="{DynamicResource MaterialDesignBackground}">
+        <Grid>
+            <Border x:Name="BorderDrag"
+                    BorderBrush="{DynamicResource MaterialDesignTextBoxBorder}"
+                    BorderThickness="2"
                     Margin="10">
-        </TabControl>
-    </Grid>
+                <TextBlock Text="Drag series here"
+                           Style="{DynamicResource MaterialDesignHeadline5TextBlock}"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center"
+                           TextAlignment="Center"
+                           TextWrapping="Wrap" />
+            </Border>
+            <mah:MetroAnimatedTabControl x:Name="TabControl"
+                                         mah:TabControlHelper.Underlined="TabPanel"
+                                         Margin="10">
+            </mah:MetroAnimatedTabControl>
+        </Grid>
+    </Border>
 </rxui:ReactiveUserControl>

@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using GongSolutions.Wpf.DragDrop;
+using sdmx_dl_ui.ViewModels;
+using Splat;
 
 namespace sdmx_dl_ui.Views.Infrastructure
 {
@@ -13,13 +15,25 @@ namespace sdmx_dl_ui.Views.Infrastructure
     {
         public void StartDrag( IDragInfo dragInfo )
         {
-            if ( dragInfo.VisualSource is TextBlock textBlock )
+            switch ( dragInfo.VisualSource )
             {
-                dragInfo.Data = textBlock.Text.Trim();
-                dragInfo.DataFormat = DataFormats.GetDataFormat( DataFormats.Text );
+                case TextBlock textBlock:
+                    dragInfo.Data = textBlock.Text.Trim();
+                    dragInfo.DataFormat = DataFormats.GetDataFormat( DataFormats.Text );
 
-                dragInfo.Effects = dragInfo.Data != null ? DragDropEffects.Copy | DragDropEffects.Move : DragDropEffects.None;
+                    dragInfo.Effects = dragInfo.Data != null ? DragDropEffects.Copy | DragDropEffects.Move : DragDropEffects.None;
+                    break;
 
+                case TreeView treeView:
+                    if ( treeView.SelectedItem != null && treeView.SelectedItem is HierarchicalCodeLabelViewModel hierarchical )
+                    {
+                        var vm = Locator.Current.GetService<ScriptsViewModel>();
+                        dragInfo.Data = $"{vm.ActiveSource.Name} {vm.ActiveFlow.Ref} {hierarchical.Code}";
+                        dragInfo.DataFormat = DataFormats.GetDataFormat( DataFormats.Text );
+
+                        dragInfo.Effects = dragInfo.Data != null ? DragDropEffects.Copy | DragDropEffects.Move : DragDropEffects.None;
+                    }
+                    break;
             }
         }
 
@@ -28,17 +42,14 @@ namespace sdmx_dl_ui.Views.Infrastructure
 
         public void Dropped( IDropInfo dropInfo )
         {
-
         }
 
         public void DragDropOperationFinished( DragDropEffects operationResult , IDragInfo dragInfo )
         {
-
         }
 
         public void DragCancelled()
         {
-
         }
 
         public bool TryCatchOccurredException( Exception exception )

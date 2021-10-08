@@ -60,12 +60,13 @@
                 Background="{DynamicResource PrimaryHueMidBrush}"
                 Grid.Row="0"
                 Grid.RowSpan="3">
-            <anim:HourglassIndeterminateProgress x:Name="Hourglass"
-                                                 VerticalAlignment="Center"
-                                                 HorizontalAlignment="Center"
-                                                 StrokeUpper="{DynamicResource PrimaryHueDarkBrush}"
-                                                 StrokeLower="{DynamicResource PrimaryHueLightBrush}"
-                                                 Margin="50" />
+            <ProgressBar VerticalAlignment="Center"
+                         HorizontalAlignment="Center"
+                         IsIndeterminate="True"
+                         Style="{DynamicResource MaterialDesignCircularProgressBar}"
+                         Foreground="{DynamicResource PrimaryHueLightBrush}"
+                         Height="80"
+                         Width="80" />
         </Border>
 
         <Border x:Name="BorderError"

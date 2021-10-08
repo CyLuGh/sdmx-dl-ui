@@ -13,18 +13,23 @@
                           mc:Ignorable="d"
                           d:DesignHeight="450"
                           d:DesignWidth="800">
-    <TabControl mah:TabControlHelper.Underlined="TabPanel">
-        <TabItem Header="Explorer">
-            <TreeView x:Name="TreeViewDimensions"
-                      VirtualizingStackPanel.IsVirtualizing="True"
-                      HorizontalAlignment="Stretch"
-                      VerticalAlignment="Stretch">
-                <TreeView.ItemContainerStyle>
-                    <Style TargetType="{x:Type TreeViewItem}"
-                           BasedOn="{StaticResource MaterialDesignTreeViewItem}">
-                        <Setter Property="IsExpanded"
-                                Value="{Binding IsExpanded, Mode=TwoWay}" />
-                        <!--<Setter Property="IsSelected"
+    <Border Padding="5"
+            CornerRadius="5"
+            BorderThickness="1"
+            BorderBrush="{DynamicResource MaterialDesignDivider}"
+            Background="{DynamicResource MaterialDesignBackground}">
+        <TabControl mah:TabControlHelper.Underlined="TabPanel">
+            <TabItem Header="Explorer">
+                <TreeView x:Name="TreeViewDimensions"
+                          VirtualizingStackPanel.IsVirtualizing="True"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch">
+                    <TreeView.ItemContainerStyle>
+                        <Style TargetType="{x:Type TreeViewItem}"
+                               BasedOn="{StaticResource MaterialDesignTreeViewItem}">
+                            <Setter Property="IsExpanded"
+                                    Value="{Binding IsExpanded, Mode=TwoWay}" />
+                            <!--<Setter Property="IsSelected"
                                 Value="{Binding IsSelected, Mode=TwoWay}" />
                         <Setter Property="FontWeight"
                                 Value="Normal" />
@@ -35,58 +40,59 @@
                                         Value="Bold" />
                             </Trigger>
                         </Style.Triggers>-->
-                    </Style>
-                </TreeView.ItemContainerStyle>
+                        </Style>
+                    </TreeView.ItemContainerStyle>
 
-                <TreeView.ItemTemplate>
-                    <HierarchicalDataTemplate DataType="viewModels:HierachicalCodeLabelViewModel"
-                                              ItemsSource="{Binding Path=Children}">
-                        <rxui:ViewModelViewHost ViewModel="{Binding}"
-                                                HorizontalContentAlignment="Stretch"
-                                                HorizontalAlignment="Stretch" />
-                    </HierarchicalDataTemplate>
-                </TreeView.ItemTemplate>
-            </TreeView>
-        </TabItem>
-        <TabItem Header="Dimensions">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-
-                <ListBox x:Name="ListBoxDimensions"
-                         HorizontalContentAlignment="Stretch"
-                         HorizontalAlignment="Stretch"
-                         Margin="2">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate >
-                            <rxui:ViewModelViewHost ViewContract="List"
-                                                    ViewModel="{Binding}"
+                    <TreeView.ItemTemplate>
+                        <HierarchicalDataTemplate DataType="viewModels:HierachicalCodeLabelViewModel"
+                                                  ItemsSource="{Binding Path=Children}">
+                            <rxui:ViewModelViewHost ViewModel="{Binding}"
                                                     HorizontalContentAlignment="Stretch"
                                                     HorizontalAlignment="Stretch" />
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                        </HierarchicalDataTemplate>
+                    </TreeView.ItemTemplate>
+                </TreeView>
+            </TabItem>
+            <TabItem Header="Dimensions">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-                <UniformGrid Rows="1"
-                             Grid.Row="1">
-                    <Button x:Name="ButtonForward"
-                            Style="{DynamicResource MaterialDesignFlatMidBgButton}"
-                            Margin="5">
-                        <materialDesign:PackIcon Kind="ChevronDoubleUp"
-                                                 Height="24"
-                                                 Width="24" />
-                    </Button>
-                    <Button x:Name="ButtonBackward"
-                            Style="{DynamicResource MaterialDesignFlatMidBgButton}"
-                            Margin="5">
-                        <materialDesign:PackIcon Kind="ChevronDoubleDown"
-                                                 Height="24"
-                                                 Width="24" />
-                    </Button>
-                </UniformGrid>
-            </Grid>
-        </TabItem>
-    </TabControl>
+                    <ListBox x:Name="ListBoxDimensions"
+                             HorizontalContentAlignment="Stretch"
+                             HorizontalAlignment="Stretch"
+                             Margin="2">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <rxui:ViewModelViewHost ViewContract="List"
+                                                        ViewModel="{Binding}"
+                                                        HorizontalContentAlignment="Stretch"
+                                                        HorizontalAlignment="Stretch" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <UniformGrid Rows="1"
+                                 Grid.Row="1">
+                        <Button x:Name="ButtonForward"
+                                Style="{DynamicResource MaterialDesignFlatMidBgButton}"
+                                Margin="5">
+                            <materialDesign:PackIcon Kind="ChevronDoubleUp"
+                                                     Height="24"
+                                                     Width="24" />
+                        </Button>
+                        <Button x:Name="ButtonBackward"
+                                Style="{DynamicResource MaterialDesignFlatMidBgButton}"
+                                Margin="5">
+                            <materialDesign:PackIcon Kind="ChevronDoubleDown"
+                                                     Height="24"
+                                                     Width="24" />
+                        </Button>
+                    </UniformGrid>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Border>
 </rxui:ReactiveUserControl>

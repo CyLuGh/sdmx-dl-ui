@@ -37,7 +37,7 @@ namespace sdmx_dl_ui.Views
             } );
         }
 
-        private static void PopulateFromViewModel( MainDisplayView view , MainDisplayViewModel? viewModel , CompositeDisposable disposables )
+        private static void PopulateFromViewModel( MainDisplayView view , MainDisplayViewModel viewModel , CompositeDisposable disposables )
         {
             GongSolutions.Wpf.DragDrop.DragDrop.SetIsDropTarget( view , true );
             GongSolutions.Wpf.DragDrop.DragDrop.SetDropHandler( view , viewModel );
@@ -56,7 +56,7 @@ namespace sdmx_dl_ui.Views
 
             viewModel.CreateTabItemInteraction.RegisterHandler( ctx =>
                 {
-                    var tabItem = new TabItem
+                    var tabItem = new MetroTabItem
                     {
                         Header = ctx.Input.Key ,
                         Content = new ViewModelViewHost
@@ -66,10 +66,25 @@ namespace sdmx_dl_ui.Views
                             HorizontalAlignment = HorizontalAlignment.Stretch ,
                             VerticalContentAlignment = VerticalAlignment.Stretch ,
                             VerticalAlignment = VerticalAlignment.Stretch
-                        }
+                        } ,
+                        CloseButtonEnabled = true ,
+                        CloseTabCommand = viewModel.RemoveSeriesCommand ,
+                        CloseTabCommandParameter = ctx.Input
                     };
                     view.TabControl.Items.Add( tabItem );
                     view.TabControl.SelectedItem = tabItem;
+                    ctx.SetOutput( Unit.Default );
+                } )
+                .DisposeWith( disposables );
+
+            viewModel.SwitchTabItemInteraction.RegisterHandler( ctx =>
+                {
+                    var tabItem = view.TabControl.Items.OfType<MetroTabItem>()
+                        .FirstOrDefault( x => x.Header.Equals( ctx.Input.Key ) );
+
+                    if ( tabItem != null )
+                        view.TabControl.SelectedItem = tabItem;
+
                     ctx.SetOutput( Unit.Default );
                 } )
                 .DisposeWith( disposables );

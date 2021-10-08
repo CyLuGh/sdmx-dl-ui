@@ -24,9 +24,15 @@ namespace sdmx_dl_ui.ViewModels
         internal Interaction<SeriesDisplayViewModel , Unit> CreateTabItemInteraction { get; }
             = new Interaction<SeriesDisplayViewModel , Unit>( RxApp.MainThreadScheduler );
 
+        internal Interaction<SeriesDisplayViewModel , Unit> SwitchTabItemInteraction { get; }
+            = new Interaction<SeriesDisplayViewModel , Unit>( RxApp.MainThreadScheduler );
+
+        internal ReactiveCommand<SeriesDisplayViewModel , Unit> RemoveSeriesCommand { get; private set; }
+
         public MainDisplayViewModel()
         {
             CreateTabItemInteraction.RegisterHandler( ctx => ctx.SetOutput( Unit.Default ) );
+            SwitchTabItemInteraction.RegisterHandler( ctx => ctx.SetOutput( Unit.Default ) );
 
             SeriesCache.Connect()
                 .DisposeMany()
@@ -39,6 +45,14 @@ namespace sdmx_dl_ui.ViewModels
                 .Do( async s => await CreateTabItemInteraction.Handle( s ) )
                 .Subscribe();
 
+            SeriesCache.Connect()
+                .DisposeMany()
+                .SelectMany( c => c.Where( o => o.Reason == ChangeReason.Update ).Select( o => o.Current ) )
+                .Do( async s => await SwitchTabItemInteraction.Handle( s ) )
+                .Subscribe();
+
+            RemoveSeriesCommand = ReactiveCommand.Create( ( SeriesDisplayViewModel sdvm )
+                 => SeriesCache.Remove( sdvm ) );
         }
 
         public void DragOver( IDropInfo dropInfo )

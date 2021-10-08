@@ -3,6 +3,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using ReactiveUI;
 using sdmx_dl_ui.ViewModels;
+using Splat;
 
 namespace sdmx_dl_ui.Views
 {
@@ -55,6 +56,9 @@ namespace sdmx_dl_ui.Views
                     vm => vm.SelectedHierarchicalCode ,
                     v => v.TreeViewDimensions.SelectedItem )
                 .DisposeWith( disposables );
+
+            GongSolutions.Wpf.DragDrop.DragDrop.SetIsDragSource( view.TreeViewDimensions , true );
+            GongSolutions.Wpf.DragDrop.DragDrop.SetDragHandler( view.TreeViewDimensions , Locator.Current.GetService<ScriptsViewModel>().KeyDragHandler );
         }
     }
 }
