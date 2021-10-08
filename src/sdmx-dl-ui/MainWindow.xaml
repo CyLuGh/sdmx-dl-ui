@@ -30,26 +30,26 @@
                 <RowDefinition />
             </Grid.RowDefinitions>
 
-            <GroupBox Header="SOURCES"
-                      Style="{DynamicResource MaterialDesignCardGroupBox}"
-                      Margin="5">
-                <ComboBox x:Name="ComboBoxSources"
-                          DisplayMemberPath="Description"
-                          Style="{DynamicResource MahApps.Styles.ComboBox}" />
-            </GroupBox>
+            <ComboBox x:Name="ComboBoxSources"
+                      DisplayMemberPath="Description"
+                      mah:TextBoxHelper.Watermark="SOURCE"
+                      mah:TextBoxHelper.UseFloatingWatermark="True"
+                      Style="{DynamicResource MahApps.Styles.ComboBox}"
+                      Margin="10 10 10 5"
+                      Grid.Row="0"
+                      Grid.Column="0" />
 
-            <GroupBox Header="FLOWS"
-                      Style="{DynamicResource MaterialDesignCardGroupBox}"
-                      Margin="5"
+            <ComboBox x:Name="ComboBoxFlows"
+                      DisplayMemberPath="Label"
+                      mah:TextBoxHelper.Watermark="LABEL"
+                      mah:TextBoxHelper.UseFloatingWatermark="True"
+                      Style="{DynamicResource MahApps.Styles.ComboBox}"
+                      Margin="10 5 10 10"
                       Grid.Row="1"
-                      Grid.Column="0">
-                <ComboBox x:Name="ComboBoxFlows"
-                          DisplayMemberPath="Label"
-                          Style="{DynamicResource MahApps.Styles.ComboBox}" />
-            </GroupBox>
+                      Grid.Column="0" />
 
             <rxui:ViewModelViewHost x:Name="DimensionsOrderingViewHost"
-                                    Margin="5"
+                                    Margin="10 5 10 10"
                                     Grid.Row="2"
                                     Grid.Column="0"
                                     HorizontalAlignment="Stretch"
@@ -97,6 +97,14 @@
                            VerticalAlignment="Center"
                            DockPanel.Dock="Right"
                            Focusable="False" />
+                <ProgressBar x:Name="ProgressBarWorking"
+                             Margin="5 2"
+                             Width="150"
+                             Style="{DynamicResource MaterialDesignLinearProgressBar}"
+                             IsIndeterminate="True"
+                             VerticalAlignment="Center"
+                             DockPanel.Dock="Right"
+                             Focusable="False" />
                 <Rectangle />
             </DockPanel>
         </materialDesign:ColorZone>

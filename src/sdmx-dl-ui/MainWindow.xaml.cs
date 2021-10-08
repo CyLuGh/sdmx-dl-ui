@@ -34,8 +34,23 @@ namespace sdmx_dl_ui
         {
             view.OneWayBind( viewModel ,
                 vm => vm.IsWorking ,
-                v => v.WorkingGrid.Visibility ,
+                v => v.ProgressBarWorking.Visibility ,
                 b => b ? Visibility.Visible : Visibility.Collapsed )
+                .DisposeWith( disposables );
+
+            view.OneWayBind( viewModel ,
+                    vm => vm.SourcesEnabled ,
+                    v => v.ComboBoxSources.IsEnabled )
+                .DisposeWith( disposables );
+
+            view.OneWayBind( viewModel ,
+                    vm => vm.FlowsEnabled ,
+                    v => v.ComboBoxFlows.IsEnabled )
+                .DisposeWith( disposables );
+
+            view.OneWayBind( viewModel ,
+                    vm => vm.DimensionsEnabled ,
+                    v => v.DimensionsOrderingViewHost.IsEnabled )
                 .DisposeWith( disposables );
 
             view.OneWayBind( viewModel ,

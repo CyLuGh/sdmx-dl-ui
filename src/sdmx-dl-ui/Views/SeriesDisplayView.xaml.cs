@@ -49,6 +49,11 @@ namespace sdmx_dl_ui.Views
                     vm => vm.LineSeries ,
                     v => v.CartesianChart.Series )
                 .DisposeWith( disposables );
+
+            view.OneWayBind( viewModel ,
+                    vm => vm.XAxes ,
+                    v => v.CartesianChart.XAxes )
+                .DisposeWith( disposables );
         }
     }
 }

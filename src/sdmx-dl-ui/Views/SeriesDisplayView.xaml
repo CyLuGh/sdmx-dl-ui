@@ -8,6 +8,7 @@
                           xmlns:local="clr-namespace:sdmx_dl_ui.Views"
                           xmlns:viewmodels="clr-namespace:sdmx_dl_ui.ViewModels"
                           xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+                          xmlns:anim="clr-namespace:AnimatedWait;assembly=AnimatedWait"
                           Background="{DynamicResource MaterialDesignBackground}"
                           mc:Ignorable="d"
                           d:DesignHeight="450"
@@ -20,6 +21,7 @@
         </Grid.RowDefinitions>
 
         <lvc:CartesianChart x:Name="CartesianChart"
+                            LegendPosition="Bottom"
                             Margin="5" />
 
         <DataGrid x:Name="DataGrid"
@@ -58,12 +60,12 @@
                 Background="{DynamicResource PrimaryHueMidBrush}"
                 Grid.Row="0"
                 Grid.RowSpan="3">
-            <TextBlock Text="Working"
-                       Style="{DynamicResource MaterialDesignHeadline3TextBlock}"
-                       VerticalAlignment="Center"
-                       HorizontalAlignment="Center"
-                       TextAlignment="Center"
-                       TextWrapping="Wrap" />
+            <anim:HourglassIndeterminateProgress x:Name="Hourglass"
+                                                 VerticalAlignment="Center"
+                                                 HorizontalAlignment="Center"
+                                                 StrokeUpper="{DynamicResource PrimaryHueDarkBrush}"
+                                                 StrokeLower="{DynamicResource PrimaryHueLightBrush}"
+                                                 Margin="50" />
         </Border>
 
         <Border x:Name="BorderError"

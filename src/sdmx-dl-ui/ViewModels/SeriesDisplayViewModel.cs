@@ -20,15 +20,17 @@ namespace sdmx_dl_ui.ViewModels
     {
         [Reactive] public string Key { get; set; }
 
+        [Reactive] public List<Axis> XAxes { get; set; }
+
         public bool IsWorking { [ObservableAsProperty] get; }
         public bool HasEncounteredError { [ObservableAsProperty] get; }
+
+
         public DataSeries[] Data { [ObservableAsProperty] get; }
         public ISeries[] LineSeries { [ObservableAsProperty] get; }
 
         internal ReactiveCommand<string , DataSeries[]> RetrieveDataSeriesCommand { get; private set; }
-
-        internal Interaction<Unit , Unit> RefreshChartInteraction { get; }
-            = new Interaction<Unit , Unit>( RxApp.MainThreadScheduler );
+        internal ReactiveCommand<string , MetaSeries[]> RetrieveMetaSeriesCommand { get; private set; }
 
         public ViewModelActivator Activator { get; }
 
@@ -52,30 +54,34 @@ namespace sdmx_dl_ui.ViewModels
                 .DistinctUntilChanged()
                 .InvokeCommand( RetrieveDataSeriesCommand );
 
+            this.WhenAnyValue( x => x.Key )
+                .Where( s => !string.IsNullOrWhiteSpace( s ) && s.Split( ' ' ).Length == 3 )
+                .DistinctUntilChanged()
+                .InvokeCommand( RetrieveMetaSeriesCommand );
+
             RetrieveDataSeriesCommand
                 .ToPropertyEx( this , x => x.Data , scheduler: RxApp.MainThreadScheduler );
 
-            //this.WhenAnyValue( x => x.Data )
-            //    .WhereNotNull()
-            //    .Where( _ => PlotModel.Series.Count == 0 )
-            //    .Select( data => BuildChartSeries( data ) )
-            //    .ObserveOn( RxApp.MainThreadScheduler )
-            //    .Subscribe( async lss =>
-            //    {
-            //        PlotModel.Series.Clear();
-            //        foreach ( var ls in lss )
-            //            PlotModel.Series.Add( ls );
-            //        await RefreshChartInteraction.Handle( Unit.Default );
-            //    } );
-
             this.WhenActivated( disposables =>
             {
-                RetrieveDataSeriesCommand.IsExecuting
+                Observable.CombineLatest( RetrieveDataSeriesCommand.IsExecuting , RetrieveMetaSeriesCommand.IsExecuting )
+                    .Select( runs => runs.Any( x => x ) )
                     .ToPropertyEx( this , x => x.IsWorking , scheduler: RxApp.MainThreadScheduler )
                     .DisposeWith( disposables );
 
                 this.WhenAnyValue( x => x.Data )
                     .WhereNotNull()
+                    .Do( _ =>
+                    {
+                        XAxes = new List<Axis>
+                        {
+                            new Axis
+                            {
+                                Labeler = value => DateTime.FromOADate( value ).ToString("yyyy-MM"),
+                                LabelsRotation = 45
+                            }
+                        };
+                    } )
                     .Select( data => BuildChartSeries( data ) )
                     .ToPropertyEx( this , x => x.LineSeries , scheduler: RxApp.MainThreadScheduler )
                     .DisposeWith( disposables );
@@ -87,9 +93,11 @@ namespace sdmx_dl_ui.ViewModels
             .Select( g => new LineSeries<ChartModel>
             {
                 Values = g.Select( x => new ChartModel( x.ObsPeriod , x.ObsValue.HasValue ? x.ObsValue.Value : double.NaN ) ).ToArray() ,
+                LineSmoothness = 0d ,
                 Fill = null ,
                 GeometryFill = null ,
                 GeometryStroke = null ,
+                //GeometrySize = 3,
                 Name = g.Key
             } )
             .ToArray();
@@ -104,13 +112,15 @@ namespace sdmx_dl_ui.ViewModels
             @this.RetrieveDataSeriesCommand.ThrownExceptions
                 .Select( _ => true )
                 .ToPropertyEx( @this , x => x.HasEncounteredError , scheduler: RxApp.MainThreadScheduler );
+
+            @this.RetrieveMetaSeriesCommand = ReactiveCommand.CreateFromObservable( ( string key ) =>
+                Observable.Start( () => PowerShellRunner.Query<MetaSeries>( new[] { "fetch" , "meta" }.Concat( key.Split( ' ' ) ).ToArray() )
+                ) );
         }
 
-        // override object.Equals
         public override bool Equals( object obj )
             => Equals( obj as SeriesDisplayViewModel );
 
-        // override object.GetHashCode
         public override int GetHashCode() => Key.GetHashCode();
 
         public bool Equals( SeriesDisplayViewModel other )

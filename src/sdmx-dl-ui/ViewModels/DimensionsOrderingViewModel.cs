@@ -99,7 +99,7 @@ namespace sdmx_dl_ui.ViewModels
                                 .OrderBy( x => x.DesiredPosition )
                                 .ToArray() )
                             .CombineLatest( this.WhenAnyValue( x => x.KeysOccurrences ) )
-                            .Where( t => t.First?.Any() == true && t.Second?.Any() == true )
+                            .Where( t => t.First?.Any() == true && t.Second != null )
                             .Throttle( TimeSpan.FromMilliseconds( 150 ) )
                             .InvokeCommand( BuildHierarchiesCommand );
                     } )

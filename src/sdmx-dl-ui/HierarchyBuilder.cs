@@ -32,7 +32,7 @@ namespace sdmx_dl_ui
             var dim = orderedDimensions[desiredPosition - 1];
             return dim
                 .Values
-                .Where( o => keysOccurrences[dim.Position - 1].Length == 0 || keysOccurrences[dim.Position - 1].Contains( o.Code ) )
+                .Where( o => keysOccurrences.Length == 0 || keysOccurrences[dim.Position - 1].Length == 0 || keysOccurrences[dim.Position - 1].Contains( o.Code ) )
                 .OrderBy( o => o.Code )
                 .Select( o =>
                 {

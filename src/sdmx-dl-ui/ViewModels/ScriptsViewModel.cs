@@ -18,6 +18,10 @@ namespace sdmx_dl_ui.ViewModels
     {
         public ViewModelActivator Activator { get; }
 
+        public bool SourcesEnabled { [ObservableAsProperty] get; }
+        public bool FlowsEnabled { [ObservableAsProperty] get; }
+        public bool DimensionsEnabled { [ObservableAsProperty] get; }
+
         public bool IsWorking { [ObservableAsProperty] get; }
         public bool IsFaulted { [ObservableAsProperty] get; }
         public string ToolVersion { [ObservableAsProperty] get; }
@@ -69,13 +73,24 @@ namespace sdmx_dl_ui.ViewModels
                     DimensionsOrderingViewModel.KeysOccurrences = keys;
                 } );
 
+            RetrieveKeysCommand
+                .ThrownExceptions
+                .Subscribe( _ =>
+                {
+                    DimensionsOrderingViewModel.KeysOccurrences = Array.Empty<string[]>();
+                } );
+
             Observable.CombineLatest(
                 CheckScriptCommand.IsExecuting ,
                 RetrieveSourcesCommand.IsExecuting ,
                 RetrieveFlowsCommand.IsExecuting ,
-                RetrieveDimensionsCommand.IsExecuting
+                RetrieveDimensionsCommand.IsExecuting ,
+                RetrieveSourcesCommand.IsExecuting ,
+                RetrieveKeysCommand.IsExecuting ,
+                DimensionsOrderingViewModel.WhenAnyValue( x => x.IsRetrievingCodes ) ,
+                DimensionsOrderingViewModel.BuildHierarchiesCommand.IsExecuting
                 )
-                .Select( sources => sources.Any( s => s ) )
+                .Select( runs => runs.Any( x => x ) )
                 .ToPropertyEx( this , x => x.IsWorking , scheduler: RxApp.MainThreadScheduler );
 
             this.WhenActivated( disposables =>
@@ -103,7 +118,7 @@ namespace sdmx_dl_ui.ViewModels
                     .Subscribe( _ =>
                     {
                         DimensionsOrderingViewModel.DimensionsCache.Clear();
-                        DimensionsOrderingViewModel.KeysOccurrences = Array.Empty<string[]>();
+                        DimensionsOrderingViewModel.KeysOccurrences = null;
                     } )
                     .DisposeWith( disposables );
 
@@ -148,6 +163,51 @@ namespace sdmx_dl_ui.ViewModels
                         return $"{source?.Name} {flow?.Ref} {selection?.Code}";
                     } )
                     .ToPropertyEx( this , x => x.ResultingKey , scheduler: RxApp.MainThreadScheduler )
+                    .DisposeWith( disposables );
+
+                Observable.CombineLatest(
+                        CheckScriptCommand.IsExecuting ,
+                        RetrieveSourcesCommand.IsExecuting ,
+                        RetrieveFlowsCommand.IsExecuting ,
+                        RetrieveDimensionsCommand.IsExecuting ,
+                        RetrieveSourcesCommand.IsExecuting ,
+                        RetrieveKeysCommand.IsExecuting ,
+                        DimensionsOrderingViewModel.WhenAnyValue( x => x.IsRetrievingCodes ) ,
+                        DimensionsOrderingViewModel.BuildHierarchiesCommand.IsExecuting
+                    )
+                    .Select( runs => runs.All( x => !x ) )
+                    .ToPropertyEx( this , x => x.SourcesEnabled , scheduler: RxApp.MainThreadScheduler )
+                    .DisposeWith( disposables );
+
+                Observable.CombineLatest(
+                        CheckScriptCommand.IsExecuting ,
+                        RetrieveSourcesCommand.IsExecuting ,
+                        RetrieveFlowsCommand.IsExecuting ,
+                        RetrieveDimensionsCommand.IsExecuting ,
+                        RetrieveSourcesCommand.IsExecuting ,
+                        DimensionsOrderingViewModel.WhenAnyValue( x => x.IsRetrievingCodes ) ,
+                        RetrieveKeysCommand.IsExecuting ,
+                        DimensionsOrderingViewModel.BuildHierarchiesCommand.IsExecuting ,
+                        this.WhenAnyValue( x => x.ActiveSource ).Select( x => x == null )
+                        )
+                        .Select( runs => runs.All( x => !x ) )
+                        .ToPropertyEx( this , x => x.FlowsEnabled , scheduler: RxApp.MainThreadScheduler )
+                        .DisposeWith( disposables );
+
+                Observable.CombineLatest(
+                        CheckScriptCommand.IsExecuting ,
+                        RetrieveSourcesCommand.IsExecuting ,
+                        RetrieveFlowsCommand.IsExecuting ,
+                        RetrieveDimensionsCommand.IsExecuting ,
+                        RetrieveSourcesCommand.IsExecuting ,
+                        DimensionsOrderingViewModel.WhenAnyValue( x => x.IsRetrievingCodes ) ,
+                        DimensionsOrderingViewModel.BuildHierarchiesCommand.IsExecuting ,
+                        RetrieveKeysCommand.IsExecuting ,
+                        this.WhenAnyValue( x => x.ActiveSource ).Select( x => x == null ) ,
+                        this.WhenAnyValue( x => x.ActiveFlow ).Select( x => x == null )
+                    )
+                    .Select( runs => runs.All( x => !x ) )
+                    .ToPropertyEx( this , x => x.DimensionsEnabled , scheduler: RxApp.MainThreadScheduler )
                     .DisposeWith( disposables );
 
                 Observable.Return( Unit.Default )
