@@ -19,16 +19,18 @@ namespace sdmx_dl_ui.ViewModels
     public class SeriesDisplayViewModel : ReactiveObject, IActivatableViewModel, IEquatable<SeriesDisplayViewModel>
     {
         [Reactive] public string Key { get; set; }
-
         [Reactive] public List<Axis> XAxes { get; set; }
+
+        [Reactive] public string PeriodFormat { get; set; } = "yyyy-MM";
+        [Reactive] public ushort Decimals { get; set; } = 2;
 
         public bool IsWorking { [ObservableAsProperty] get; }
         public bool HasEncounteredError { [ObservableAsProperty] get; }
 
-        public DataSeries[] Data { [ObservableAsProperty] get; }
+        public DataSeriesViewModel[] Data { [ObservableAsProperty] get; }
         public ISeries[] LineSeries { [ObservableAsProperty] get; }
 
-        internal ReactiveCommand<string , DataSeries[]> RetrieveDataSeriesCommand { get; private set; }
+        internal ReactiveCommand<string , DataSeriesViewModel[]> RetrieveDataSeriesCommand { get; private set; }
         internal ReactiveCommand<string , MetaSeries[]> RetrieveMetaSeriesCommand { get; private set; }
 
         public ViewModelActivator Activator { get; }
@@ -68,30 +70,44 @@ namespace sdmx_dl_ui.ViewModels
                     .ToPropertyEx( this , x => x.IsWorking , scheduler: RxApp.MainThreadScheduler )
                     .DisposeWith( disposables );
 
+                this.WhenAnyValue( x => x.PeriodFormat )
+                    .Do( _ =>
+                        {
+                            XAxes = new List<Axis>
+                            {
+                                new Axis
+                                {
+                                    Labeler = value => DateTime.FromOADate( value ).ToString(PeriodFormat),
+                                    LabelsRotation = 45
+                                }
+                            };
+                        } )
+                    .Subscribe()
+                    .DisposeWith( disposables );
+
                 this.WhenAnyValue( x => x.Data )
                     .WhereNotNull()
-                    .Do( _ =>
-                    {
-                        XAxes = new List<Axis>
-                        {
-                            new Axis
-                            {
-                                Labeler = value => DateTime.FromOADate( value ).ToString("yyyy-MM"),
-                                LabelsRotation = 45
-                            }
-                        };
-                    } )
                     .Select( data => BuildChartSeries( data ) )
                     .ToPropertyEx( this , x => x.LineSeries , scheduler: RxApp.MainThreadScheduler )
+                    .DisposeWith( disposables );
+
+                this.WhenAnyValue( x => x.Decimals )
+                    .Throttle( TimeSpan.FromMilliseconds( 200 ) )
+                    .Subscribe( dc => Data?.AsParallel().ForAll( d => d.Decimals = dc ) )
+                    .DisposeWith( disposables );
+
+                this.WhenAnyValue( x => x.PeriodFormat )
+                    .Throttle( TimeSpan.FromMilliseconds( 200 ) )
+                    .Subscribe( s => Data?.AsParallel().ForAll( d => d.PeriodFormat = s ) )
                     .DisposeWith( disposables );
             } );
         }
 
-        private LineSeries<ChartModel>[] BuildChartSeries( IEnumerable<DataSeries> dataSeries )
+        private LineSeries<ChartModel>[] BuildChartSeries( IEnumerable<DataSeriesViewModel> dataSeries )
             => dataSeries.GroupBy( x => x.Series )
             .Select( g => new LineSeries<ChartModel>
             {
-                Values = g.Select( x => new ChartModel( x.ObsPeriod , x.ObsValue.HasValue ? x.ObsValue.Value : double.NaN ) ).ToArray() ,
+                Values = g.Select( x => new ChartModel( x.ObsPeriod , x.ObsValue ) ).ToArray() ,
                 LineSmoothness = 0d ,
                 Fill = null ,
                 GeometryFill = null ,
@@ -105,6 +121,7 @@ namespace sdmx_dl_ui.ViewModels
         {
             @this.RetrieveDataSeriesCommand = ReactiveCommand.CreateFromObservable( ( string key ) =>
                 Observable.Start( () => PowerShellRunner.Query<DataSeries>( new[] { "fetch" , "data" }.Concat( key.Split( ' ' ) ).ToArray() )
+                    .Select( d => new DataSeriesViewModel( d ) )
                     .OrderBy( x => x.Series ).ThenBy( x => x.ObsPeriod ).ToArray()
                  ) );
 
