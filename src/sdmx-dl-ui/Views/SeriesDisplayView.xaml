@@ -8,7 +8,6 @@
                           xmlns:local="clr-namespace:sdmx_dl_ui.Views"
                           xmlns:viewmodels="clr-namespace:sdmx_dl_ui.ViewModels"
                           xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
-                          xmlns:anim="clr-namespace:AnimatedWait;assembly=AnimatedWait"
                           Background="{DynamicResource MaterialDesignBackground}"
                           mc:Ignorable="d"
                           d:DesignHeight="450"

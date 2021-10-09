@@ -26,6 +26,8 @@ namespace sdmx_dl_ui.ViewModels
         public bool IsFaulted { [ObservableAsProperty] get; }
         public string ToolVersion { [ObservableAsProperty] get; }
 
+        [Reactive] public string LookupKey { get; set; }
+
         public Source[] Sources { [ObservableAsProperty] get; }
         [Reactive] public Source ActiveSource { get; set; }
 
@@ -42,14 +44,20 @@ namespace sdmx_dl_ui.ViewModels
         public ReactiveCommand<(Source, Flow) , Dimension[]> RetrieveDimensionsCommand { get; private set; }
         public ReactiveCommand<(Source, Flow, Dimension[]) , string[][]> RetrieveKeysCommand { get; private set; }
         public ReactiveCommand<string , Unit> CopyToClipboardCommand { get; private set; }
+        public ReactiveCommand<Unit , Unit> LookupKeyCommand { get; private set; }
+
+        internal Interaction<Unit , Unit> ClosePopupInteraction { get; }
+            = new Interaction<Unit , Unit>( RxApp.MainThreadScheduler );
 
         internal DimensionsOrderingViewModel DimensionsOrderingViewModel { get; }
+        internal MainDisplayViewModel MainDisplayViewModel { get; }
         internal KeyDragHandler KeyDragHandler { get; }
 
         public ScriptsViewModel()
         {
             Activator = new ViewModelActivator();
             DimensionsOrderingViewModel = new DimensionsOrderingViewModel();
+            MainDisplayViewModel = new MainDisplayViewModel();
             KeyDragHandler = new KeyDragHandler();
 
             InitializeCommands( this );
@@ -274,6 +282,14 @@ namespace sdmx_dl_ui.ViewModels
             {
                 Clipboard.SetText( key );
             } , canCopy );
+
+            @this.LookupKeyCommand = ReactiveCommand.CreateFromTask( async () =>
+            {
+                if ( @this.LookupKey.Split( ' ' ).Length == 3 )
+                    @this.MainDisplayViewModel.SeriesCache.AddOrUpdate( new SeriesDisplayViewModel { Key = @this.LookupKey.Trim() } );
+
+                await @this.ClosePopupInteraction.Handle( Unit.Default );
+            } );
         }
     }
 }

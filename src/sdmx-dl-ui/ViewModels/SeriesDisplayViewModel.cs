@@ -25,7 +25,6 @@ namespace sdmx_dl_ui.ViewModels
         public bool IsWorking { [ObservableAsProperty] get; }
         public bool HasEncounteredError { [ObservableAsProperty] get; }
 
-
         public DataSeries[] Data { [ObservableAsProperty] get; }
         public ISeries[] LineSeries { [ObservableAsProperty] get; }
 
@@ -109,13 +108,14 @@ namespace sdmx_dl_ui.ViewModels
                     .OrderBy( x => x.Series ).ThenBy( x => x.ObsPeriod ).ToArray()
                  ) );
 
+            @this.RetrieveMetaSeriesCommand = ReactiveCommand.CreateFromObservable( ( string key ) =>
+               Observable.Start( () => PowerShellRunner.Query<MetaSeries>( new[] { "fetch" , "meta" }.Concat( key.Split( ' ' ) ).ToArray() )
+               ) );
+
             @this.RetrieveDataSeriesCommand.ThrownExceptions
+                .Merge( @this.RetrieveMetaSeriesCommand.ThrownExceptions )
                 .Select( _ => true )
                 .ToPropertyEx( @this , x => x.HasEncounteredError , scheduler: RxApp.MainThreadScheduler );
-
-            @this.RetrieveMetaSeriesCommand = ReactiveCommand.CreateFromObservable( ( string key ) =>
-                Observable.Start( () => PowerShellRunner.Query<MetaSeries>( new[] { "fetch" , "meta" }.Concat( key.Split( ' ' ) ).ToArray() )
-                ) );
         }
 
         public override bool Equals( object obj )
