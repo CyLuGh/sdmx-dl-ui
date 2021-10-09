@@ -28,6 +28,7 @@ namespace sdmx_dl_ui
             Locator.CurrentMutable.Register( () => new HierarchicalCodeLabelView() , typeof( IViewFor<HierarchicalCodeLabelViewModel> ) );
             Locator.CurrentMutable.Register( () => new MainDisplayView() , typeof( IViewFor<MainDisplayViewModel> ) );
             Locator.CurrentMutable.Register( () => new SeriesDisplayView() , typeof( IViewFor<SeriesDisplayViewModel> ) );
+            Locator.CurrentMutable.Register( () => new SeriesDisplayConfigurationView() , typeof( IViewFor<SeriesDisplayViewModel> ) , "Configuration" );
 
             LiveChartsSkiaSharp.DefaultPlatformBuilder( LiveChartsCore.LiveCharts.CurrentSettings );
         }

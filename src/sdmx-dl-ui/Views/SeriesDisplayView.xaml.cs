@@ -28,6 +28,8 @@ namespace sdmx_dl_ui.Views
 
         private static void PopulateFromViewModel( SeriesDisplayView view , SeriesDisplayViewModel viewModel , CompositeDisposable disposables )
         {
+            view.ConfigurationViewHost.ViewModel = viewModel;
+
             view.OneWayBind( viewModel ,
                     vm => vm.HasEncounteredError ,
                     v => v.BorderError.Visibility ,
