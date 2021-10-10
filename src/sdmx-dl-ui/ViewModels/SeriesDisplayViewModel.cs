@@ -1,9 +1,11 @@
 ﻿using DynamicData;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
+using MoreLinq;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using sdmx_dl_ui.Models;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -28,6 +30,7 @@ namespace sdmx_dl_ui.ViewModels
         public bool HasEncounteredError { [ObservableAsProperty] get; }
 
         public DataSeriesViewModel[] Data { [ObservableAsProperty] get; }
+        public MetaSeries[] Meta { [ObservableAsProperty] get; }
         public ISeries[] LineSeries { [ObservableAsProperty] get; }
 
         internal ReactiveCommand<string , DataSeriesViewModel[]> RetrieveDataSeriesCommand { get; private set; }
@@ -62,6 +65,46 @@ namespace sdmx_dl_ui.ViewModels
 
             RetrieveDataSeriesCommand
                 .ToPropertyEx( this , x => x.Data , scheduler: RxApp.MainThreadScheduler );
+
+            RetrieveMetaSeriesCommand
+                .Do( meta =>
+                {
+                    if ( ushort.TryParse( meta.FirstOrDefault( m => m?.Concept.Equals( "DECIMALS" , StringComparison.CurrentCultureIgnoreCase ) == true )
+                                        ?.Value ?? "3" , out var dec ) )
+                        Decimals = dec;
+                } )
+                .ToPropertyEx( this , x => x.Meta , scheduler: RxApp.MainThreadScheduler );
+
+            this.WhenAnyValue( x => x.Data , x => x.Meta )
+                .Where( x => x.Item1 != null && x.Item2 != null )
+                .ObserveOn( RxApp.TaskpoolScheduler )
+                .Subscribe( t =>
+                {
+                    var (data, meta) = t;
+
+                    meta
+                       .GroupBy( m => m.Series )
+                       .AsParallel()
+                       .ForAll( group =>
+                       {
+                           var title = group.FirstOrDefault( s => s.Concept.Equals( "TITLE" , StringComparison.CurrentCultureIgnoreCase ) )
+                                ?.Value ?? string.Empty;
+
+                           title = group.FirstOrDefault( s => s.Concept.Equals( "TITLE_COMPL" , StringComparison.CurrentCultureIgnoreCase ) )
+                               ?.Value ?? title;
+
+                           if ( !ushort.TryParse( meta.FirstOrDefault( m => m.Concept.Equals( "DECIMALS" , StringComparison.CurrentCultureIgnoreCase ) )
+                                        ?.Value ?? "3" , out var dec ) )
+                               dec = 3;
+
+                           data.Where( d => d.Series.Equals( group.Key ) )
+                        .ForEach( d =>
+                        {
+                            d.Title = title;
+                            d.Decimals = dec;
+                        } );
+                       } );
+                } );
 
             this.WhenActivated( disposables =>
             {
@@ -130,9 +173,12 @@ namespace sdmx_dl_ui.ViewModels
                ) );
 
             @this.RetrieveDataSeriesCommand.ThrownExceptions
-                .Merge( @this.RetrieveMetaSeriesCommand.ThrownExceptions )
                 .Select( _ => true )
                 .ToPropertyEx( @this , x => x.HasEncounteredError , scheduler: RxApp.MainThreadScheduler );
+
+            @this.RetrieveMetaSeriesCommand.ThrownExceptions
+                .Select( exc => exc.Message )
+                .InvokeCommand( Locator.Current.GetService<ScriptsViewModel>() , x => x.ShowMessageCommand );
         }
 
         public override bool Equals( object obj )

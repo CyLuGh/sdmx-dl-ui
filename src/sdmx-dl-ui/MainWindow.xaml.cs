@@ -37,6 +37,11 @@ namespace sdmx_dl_ui
         private static void PopulateFromViewModel( MainWindow view , ScriptsViewModel viewModel , CompositeDisposable disposables )
         {
             view.OneWayBind( viewModel ,
+                vm => vm.SnackbarMessageQueue ,
+                v => v.Snackbar.MessageQueue )
+                .DisposeWith( disposables );
+
+            view.OneWayBind( viewModel ,
                 vm => vm.IsWorking ,
                 v => v.ProgressBarWorking.Visibility ,
                 b => b ? Visibility.Visible : Visibility.Collapsed )

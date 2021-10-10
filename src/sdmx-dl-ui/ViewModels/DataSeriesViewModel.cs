@@ -14,6 +14,7 @@ namespace sdmx_dl_ui.ViewModels
     public class DataSeriesViewModel : ReactiveObject, IActivatableViewModel
     {
         [Reactive] public string Series { get; set; }
+        [Reactive] public string Title { get; set; }
         [Reactive] public string ObsAttributes { get; set; }
         [Reactive] public DateTime ObsPeriod { get; set; }
         [Reactive] public double ObsValue { get; set; }
