@@ -86,7 +86,7 @@ namespace sdmx_dl_ui
             // Add interfaces : https://www.codeproject.com/Articles/22832/Automatic-Interface-Implementer-An-Example-of-Runt
             interfaces?.ForEach( x => typeBuilder.AddInterfaceImplementation( x ) );
 
-            var baseConstructorInfo = typeof( object ).GetConstructor( new Type[0] );
+            var baseConstructorInfo = typeof( object ).GetConstructor( Array.Empty<Type>() );
 
             var ilGenerator = constructorBuilder.GetILGenerator();
             ilGenerator.Emit( OpCodes.Ldarg_0 );                      // Load "this"
@@ -120,7 +120,7 @@ namespace sdmx_dl_ui
 
                     // Create underlying field; all properties have a field of the same type
                     FieldBuilder field =
-                        constructorFields.FirstOrDefault( o => o.Name.Equals( $"_{piName}" ) )
+                        constructorFields.Find( o => o.Name.Equals( $"_{piName}" ) )
                         ??
                         typeBuilder.DefineField( "_" + piName , propertyType , FieldAttributes.Private );
 
@@ -130,7 +130,7 @@ namespace sdmx_dl_ui
                     {
                         // If there is a getter in the interface, create a getter in the new type
                         MethodInfo getMethod = pi.GetGetMethod();
-                        if ( null != getMethod )
+                        if ( getMethod != null )
                         {
                             // This will prevent us from creating a default method for the property's getter
                             methods.Remove( getMethod );
@@ -161,7 +161,7 @@ namespace sdmx_dl_ui
                     {
                         // If there is a setter in the interface, create a setter in the new type
                         MethodInfo setMethod = pi.GetSetMethod();
-                        if ( null != setMethod )
+                        if ( setMethod != null )
                         {
                             // This will prevent us from creating a default method for the property's setter
                             methods.Remove( setMethod );

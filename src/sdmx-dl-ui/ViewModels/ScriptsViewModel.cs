@@ -157,8 +157,8 @@ namespace sdmx_dl_ui.ViewModels
                                 Type = d.Type ,
                                 Label = d.Label ,
                                 Coded = d.Coded ,
-                                Position = d.Position.HasValue ? d.Position.Value : 0 ,
-                                DesiredPosition = d.Position.HasValue ? d.Position.Value : 0
+                                Position = d.Position ?? 0 ,
+                                DesiredPosition = d.Position ?? 0
                             } ) );
                         }
                     } )
