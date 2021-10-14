@@ -1,3 +1,4 @@
+using System;
 namespace sdmx_dl_ui.ViewModels
 {
     public class CodeLabelInfo
@@ -20,9 +21,23 @@ namespace sdmx_dl_ui.ViewModels
         }
     }
 
-    public class DimensionChooser
+    public class DimensionChooser : IEquatable<DimensionChooser>
     {
         public int Position { get; set; }
         public string Description { get; set; }
+
+        public bool Equals( DimensionChooser other )
+        {
+            if ( other is null )
+                return false;
+
+            return Position.Equals( other.Position ) && Description.Equals( other.Description );
+        }
+
+        public override int GetHashCode()
+            => HashCode.Combine( Position , Description );
+
+        public override bool Equals( object obj )
+            => Equals( obj as DimensionChooser );
     }
 }

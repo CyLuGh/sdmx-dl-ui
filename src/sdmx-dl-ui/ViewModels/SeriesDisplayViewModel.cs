@@ -41,7 +41,7 @@ namespace sdmx_dl_ui.ViewModels
 
         internal ReactiveCommand<string , DataSeriesViewModel[]> RetrieveDataSeriesCommand { get; private set; }
         internal ReactiveCommand<string , MetaSeries[]> RetrieveMetaSeriesCommand { get; private set; }
-        internal ReactiveCommand<string , CodeLabelInfo[]> ParseKeyCommand { get; private set; }
+        internal ReactiveCommand<(string, string[]) , CodeLabelInfo[]> ParseKeyCommand { get; private set; }
 
         public ViewModelActivator Activator { get; }
 
@@ -77,7 +77,9 @@ namespace sdmx_dl_ui.ViewModels
                 .DistinctUntilChanged()
                 .InvokeCommand( RetrieveMetaSeriesCommand );
 
-            this.WhenAnyValue( x => x.Key )
+            this.WhenAnyValue( x => x.Key , x => x.Data )
+                .Where( t => !string.IsNullOrEmpty( t.Item1 ) && t.Item2 != null )
+                .Select( t => (t.Item1, t.Item2.Select( o => o.Series ).Distinct().ToArray()) )
                 .InvokeCommand( ParseKeyCommand );
 
             RetrieveDataSeriesCommand
@@ -97,13 +99,13 @@ namespace sdmx_dl_ui.ViewModels
             ParseKeyCommand
                 .ToPropertyEx( this , x => x.Infos , scheduler: RxApp.MainThreadScheduler );
 
-            this.WhenAnyValue( x => x.Infos)
+            this.WhenAnyValue( x => x.Infos )
                 .WhereNotNull()
-                .Select( i => i.Select( x => new DimensionChooser{ Position = x.Position, Description = x.Description})
+                .Select( i => i.Select( x => new DimensionChooser { Position = x.Position , Description = x.Description } )
                                 .Distinct()
                                 .ToArray()
                 )
-                .ToPropertyEx(this,x => x.DimensionChoosers,scheduler: RxApp.MainThreadScheduler);
+                .ToPropertyEx( this , x => x.DimensionChoosers , scheduler: RxApp.MainThreadScheduler );
 
             this.WhenAnyValue( x => x.Data , x => x.Meta )
                 .Where( x => x.Item1 != null && x.Item2 != null )
@@ -180,17 +182,19 @@ namespace sdmx_dl_ui.ViewModels
                     .Subscribe( s => Data?.AsParallel().ForAll( d => d.PeriodFormat = s ) )
                     .DisposeWith( disposables );
 
-                this.WhenAnyValue( x => x.SelectedDimensionChooser)
+                this.WhenAnyValue( x => x.SelectedDimensionChooser )
                     .WhereNotNull()
-                    .Throttle(TimeSpan.FromMilliseconds(50))
-                    .Subscribe( dimensionChooser => {
-                        Data?.AsParallel().ForAll( d => { 
-                            var code = d.Series.Split('.')[dimensionChooser.Position-1];
-                            var info = Array.Find(Infos, x => x.Position == dimensionChooser.Position && x.Code.Equals(code));
+                    .Throttle( TimeSpan.FromMilliseconds( 50 ) )
+                    .Subscribe( dimensionChooser =>
+                    {
+                        Data?.AsParallel().ForAll( d =>
+                        {
+                            var code = d.Series.Split( '.' )[dimensionChooser.Position - 1];
+                            var info = Array.Find( Infos , x => x.Position == dimensionChooser.Position && x.Code.Equals( code ) );
                             d.Title = info?.Label ?? string.Empty;
                         } );
-                    })
-                    .DisposeWith(disposables);
+                    } )
+                    .DisposeWith( disposables );
 
                 ParseKeyCommand.IsExecuting
                     .ToPropertyEx( this , x => x.IsParsingKey , scheduler: RxApp.MainThreadScheduler )
@@ -232,8 +236,16 @@ namespace sdmx_dl_ui.ViewModels
                 .Select( exc => exc.Message )
                 .InvokeCommand( Locator.Current.GetService<ScriptsViewModel>() , x => x.ShowMessageCommand );
 
-            @this.ParseKeyCommand = ReactiveCommand.CreateFromObservable( ( string key ) =>
-                Observable.Start( () => ParseKey( key ) ) );
+            @this.ParseKeyCommand = ReactiveCommand.CreateFromObservable( ( (string, string[]) t ) =>
+                Observable.Start( () =>
+                {
+                    var (key, dataKeys) = t;
+                    return ParseKey( key , dataKeys );
+                } ) );
+
+            @this.ParseKeyCommand.ThrownExceptions
+                .Select( exc => $"Couldn't parse key: {exc.Message}" )
+                .InvokeCommand( Locator.Current.GetService<ScriptsViewModel>() , x => x.ShowMessageCommand );
         }
 
         /// <summary>
@@ -241,7 +253,7 @@ namespace sdmx_dl_ui.ViewModels
         /// </summary>
         /// <param name="key">Key with flow, source and identifier (ex: ECB EXR M.USD+CHF.EUR.SP00.A)</param>
         /// <returns>Position in the key (1-based), code in key, corresponding label</returns>
-        public static CodeLabelInfo[] ParseKey( string key )
+        public static CodeLabelInfo[] ParseKey( string key , string[] dataKeys )
         {
             if ( string.IsNullOrWhiteSpace( key ) )
                 return Array.Empty<CodeLabelInfo>();
@@ -260,18 +272,23 @@ namespace sdmx_dl_ui.ViewModels
                 .ToDictionary( d => d.Concept , d => PowerShellRunner.Query<CodeLabel>( "list" , "codes" , source , flow , d.Concept )
             );
 
-            var splits = elements[2].Split( '.' );
-            return splits.Select( ( s , position ) =>
+            var parsed = dataKeys.SelectMany( dk =>
             {
-                var dimension = Array.Find( dimensions , x => x.Position == position + 1 );
-                if ( dimension != null && details.TryGetValue( dimension.Concept , out var codeLabels ) )
+                var splits = dk.Split( '.' );
+                return splits.Select( ( s , position ) =>
                 {
-                    var codeLabel = Array.Find( codeLabels , o => o.Code.Equals( s , StringComparison.CurrentCultureIgnoreCase ) );
-                    return new CodeLabelInfo( position + 1 , dimension.Label , s , codeLabel?.Label ?? s );
-                }
+                    var dimension = Array.Find( dimensions , x => x.Position == position + 1 );
+                    if ( dimension != null && details.TryGetValue( dimension.Concept , out var codeLabels ) )
+                    {
+                        var codeLabel = Array.Find( codeLabels , o => o.Code.Equals( s , StringComparison.CurrentCultureIgnoreCase ) );
+                        return new CodeLabelInfo( position + 1 , dimension.Label , s , codeLabel?.Label ?? s );
+                    }
 
-                return new CodeLabelInfo( position + 1 , "?" , s , s );
+                    return new CodeLabelInfo( position + 1 , "?" , s , s );
+                } );
             } ).ToArray();
+
+            return parsed;
         }
 
         public override bool Equals( object obj )
