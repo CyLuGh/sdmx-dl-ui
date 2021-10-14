@@ -11,12 +11,14 @@ using DynamicData;
 using Splat;
 using System.Windows;
 using sdmx_dl_ui.Views.Infrastructure;
+using MaterialDesignThemes.Wpf;
 
 namespace sdmx_dl_ui.ViewModels
 {
     public class ScriptsViewModel : ReactiveObject, IActivatableViewModel
     {
         public ViewModelActivator Activator { get; }
+        internal SnackbarMessageQueue SnackbarMessageQueue { get; }
 
         public bool SourcesEnabled { [ObservableAsProperty] get; }
         public bool FlowsEnabled { [ObservableAsProperty] get; }
@@ -45,6 +47,7 @@ namespace sdmx_dl_ui.ViewModels
         public ReactiveCommand<(Source, Flow, Dimension[]) , string[][]> RetrieveKeysCommand { get; private set; }
         public ReactiveCommand<string , Unit> CopyToClipboardCommand { get; private set; }
         public ReactiveCommand<Unit , Unit> LookupKeyCommand { get; private set; }
+        public ReactiveCommand<string , Unit> ShowMessageCommand { get; private set; }
 
         internal Interaction<Unit , Unit> ClosePopupInteraction { get; }
             = new Interaction<Unit , Unit>( RxApp.MainThreadScheduler );
@@ -59,6 +62,7 @@ namespace sdmx_dl_ui.ViewModels
             DimensionsOrderingViewModel = new DimensionsOrderingViewModel();
             MainDisplayViewModel = new MainDisplayViewModel();
             KeyDragHandler = new KeyDragHandler();
+            SnackbarMessageQueue = new SnackbarMessageQueue();
 
             InitializeCommands( this );
 
@@ -153,8 +157,8 @@ namespace sdmx_dl_ui.ViewModels
                                 Type = d.Type ,
                                 Label = d.Label ,
                                 Coded = d.Coded ,
-                                Position = d.Position.HasValue ? d.Position.Value : 0 ,
-                                DesiredPosition = d.Position.HasValue ? d.Position.Value : 0
+                                Position = d.Position ?? 0 ,
+                                DesiredPosition = d.Position ?? 0
                             } ) );
                         }
                     } )
@@ -290,6 +294,9 @@ namespace sdmx_dl_ui.ViewModels
 
                 await @this.ClosePopupInteraction.Handle( Unit.Default );
             } );
+
+            @this.ShowMessageCommand = ReactiveCommand.Create( ( string msg )
+                => @this.SnackbarMessageQueue.Enqueue( msg ) );
         }
     }
 }

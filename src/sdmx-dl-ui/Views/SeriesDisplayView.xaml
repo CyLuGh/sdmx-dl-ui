@@ -36,6 +36,9 @@
                 <DataGridTextColumn Header="Series"
                                     Binding="{Binding Path=Series}"
                                     Width="*" />
+                <DataGridTextColumn Header="Title"
+                                    Binding="{Binding Path=Title}"
+                                    Width="*" />
                 <DataGridTextColumn Header="Period"
                                     Binding="{Binding Path=FormattedPeriod}"
                                     SortMemberPath="ObsPeriod"

@@ -5,7 +5,7 @@ namespace sdmx_dl_ui.Models
 {
     public class Flow : ICloneable
     {
-        private static Regex _regex = new Regex( @"(?<=\:)(.*?)(?=\()" );
+        private static readonly Regex _regex = new( @"(?<=\:)(.*?)(?=\()" );
 
         public string Ref { get; init; }
         public string Label { get; init; }

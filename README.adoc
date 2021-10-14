@@ -1,0 +1,8 @@
+= sdmx-dl-ui
+
+Windows front-end GUI for https://github.com/nbbrd/sdmx-dl[SDMX command line tool]. It is written in C#/WPF.
+
+== Requirements
+
+- https://github.com/nbbrd/sdmx-dl[SDMX command line tool] must be installed. See https://github.com/nbbrd/sdmx-dl/wiki/cli-installation[installation guide].
+- https://dotnet.microsoft.com/download/dotnet/5.0[.net 5.0]

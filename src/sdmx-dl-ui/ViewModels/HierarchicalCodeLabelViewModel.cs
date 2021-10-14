@@ -15,8 +15,8 @@ namespace sdmx_dl_ui.ViewModels
 {
     public class HierarchicalCodeLabelViewModel : ReactiveObject, IActivatableViewModel, IEquatable<HierarchicalCodeLabelViewModel>
     {
-        public static HierarchicalCodeLabelViewModel Dummy
-            = new HierarchicalCodeLabelViewModel { Code = "Dummy" , Label = "Dummy" };
+        public static HierarchicalCodeLabelViewModel Dummy { get; }
+            = new() { Code = "Dummy" , Label = "Dummy" };
 
         public ViewModelActivator Activator { get; }
 
@@ -42,7 +42,7 @@ namespace sdmx_dl_ui.ViewModels
             {
                 this.WhenAnyValue( x => x.IsExpanded )
                     .Where( x => x )
-                    .Do( x =>
+                    .Do( _ =>
                     {
                         if ( HasDummyChild )
                         {

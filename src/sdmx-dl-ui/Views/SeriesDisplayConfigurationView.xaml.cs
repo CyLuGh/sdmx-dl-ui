@@ -35,7 +35,7 @@ namespace sdmx_dl_ui.Views
             } );
         }
 
-        private void PopulateFromViewModel( SeriesDisplayConfigurationView view , SeriesDisplayViewModel viewModel , CompositeDisposable disposables )
+        private static void PopulateFromViewModel( SeriesDisplayConfigurationView view , SeriesDisplayViewModel viewModel , CompositeDisposable disposables )
         {
             view.Bind( viewModel ,
                 vm => vm.PeriodFormat ,
@@ -48,6 +48,34 @@ namespace sdmx_dl_ui.Views
                 us => (double) us ,
                 d => (ushort) d )
                 .DisposeWith( disposables );
+
+            view.OneWayBind( viewModel ,
+                vm => vm.IsParsingKey ,
+                v => v.DockPanelParsingNotification.Visibility ,
+                b => b ? Visibility.Visible : Visibility.Collapsed )
+            .DisposeWith( disposables );
+
+            view.OneWayBind( viewModel ,
+                vm => vm.IsParsingKey ,
+                v => v.ComboBoxTitleDimension.Visibility ,
+                b => b ? Visibility.Collapsed : Visibility.Visible )
+            .DisposeWith( disposables );
+
+            view.OneWayBind( viewModel ,
+                vm => vm.DimensionChoosers ,
+                v => v.ComboBoxTitleDimension.ItemsSource )
+            .DisposeWith( disposables );
+
+            view.OneWayBind( viewModel ,
+                vm => vm.HasTitle ,
+                v => v.ComboBoxTitleDimension.IsEnabled ,
+                b => !b )
+            .DisposeWith( disposables );
+
+            view.Bind( viewModel ,
+                vm => vm.SelectedDimensionChooser ,
+                v => v.ComboBoxTitleDimension.SelectedItem )
+            .DisposeWith( disposables );
         }
     }
 }

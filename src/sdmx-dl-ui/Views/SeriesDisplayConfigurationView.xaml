@@ -8,26 +8,20 @@
                           xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
                           xmlns:local="clr-namespace:sdmx_dl_ui.Views"
                           xmlns:viewmodels="clr-namespace:sdmx_dl_ui.ViewModels">
-    <Grid Background="{DynamicResource MaterialDesignBackground}"
-          Width="200"
-          Focusable="False">
-        <Grid.Resources>
+    <UniformGrid Background="{DynamicResource MaterialDesignBackground}"
+                 Columns="1"
+                 Width="200"
+                 Focusable="False">
+        <UniformGrid.Resources>
             <Style TargetType="{x:Type TextBox}"
                    BasedOn="{StaticResource MahApps.Styles.TextBox}" />
-        </Grid.Resources>
-
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+        </UniformGrid.Resources>
 
         <TextBox x:Name="TextBoxDateFormat"
-                 Style="{DynamicResource MahApps.Styles.TextBox}"
                  mah:TextBoxHelper.Watermark="DATE FORMAT"
                  mah:TextBoxHelper.UseFloatingWatermark="True"
-                 HorizontalContentAlignment="Right"
                  VerticalContentAlignment="Center"
-                 Margin="10 10 10 5" />
+                 Margin="10,10,10,5" />
 
         <mah:NumericUpDown x:Name="NumericUpDownDecimals"
                            mah:TextBoxHelper.Watermark="DECIMALS"
@@ -36,7 +30,26 @@
                            Minimum="0"
                            Maximum="30"
                            NumericInputMode="Numbers"
-                           Margin="10 5 10 10"
-                           Grid.Row="1" />
-    </Grid>
+                           Margin="10,5,10,5" />
+
+        <ComboBox x:Name="ComboBoxTitleDimension"
+                  DisplayMemberPath="Description"
+                  Visibility="Collapsed"
+                  mah:TextBoxHelper.Watermark="TITLE DIMENSION"
+                  mah:TextBoxHelper.UseFloatingWatermark="True"
+                  Style="{DynamicResource MahApps.Styles.ComboBox}"
+                  Margin="10,5,10,10" />
+
+        <DockPanel x:Name="DockPanelParsingNotification"
+                   Margin="10,5,10,10">
+            <ProgressBar IsIndeterminate="True"
+                         Style="{DynamicResource MaterialDesignCircularProgressBar}"
+                         DockPanel.Dock="Left" />
+            <TextBlock Text="Parsing key"
+                       Style="{DynamicResource MaterialDesignBody1TextBlockTextBlock}"
+                       Margin="5 0"
+                       DockPanel.Dock="Right"
+                       VerticalAlignment="Center" />
+        </DockPanel>
+    </UniformGrid>
 </rxui:ReactiveUserControl>
