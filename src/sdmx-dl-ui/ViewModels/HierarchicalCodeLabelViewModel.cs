@@ -20,10 +20,10 @@ namespace sdmx_dl_ui.ViewModels
 
         public ViewModelActivator Activator { get; }
 
-        [Reactive] public string Code { get; init; }
-        [Reactive] public string Label { get; init; }
+        [Reactive] public string Code { get; set; }
+        [Reactive] public string Label { get; set; }
         [Reactive] public bool IsExpanded { get; set; }
-        public int Position { get; init; }
+        public int Position { get; set; }
         public ObservableCollection<HierarchicalCodeLabelViewModel> Children { get; }
 
         public bool HasDummyChild

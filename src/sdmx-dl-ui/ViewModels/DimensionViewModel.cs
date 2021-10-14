@@ -21,9 +21,9 @@ namespace sdmx_dl_ui.ViewModels
         [Reactive] public string Flow { get; set; }
         [Reactive] public string Concept { get; set; }
         [Reactive] public string Type { get; set; }
-        public string Label { get; init; }
+        public string Label { get; set; }
         [Reactive] public bool Coded { get; set; }
-        public int Position { get; init; }
+        public int Position { get; set; }
 
         [Reactive] public int DesiredPosition { get; set; }
         public CodeLabel[] Values { [ObservableAsProperty] get; }

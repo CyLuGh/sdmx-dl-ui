@@ -7,8 +7,8 @@ namespace sdmx_dl_ui.Models
     {
         private static readonly Regex _regex = new( @"(?<=\:)(.*?)(?=\()" );
 
-        public string Ref { get; init; }
-        public string Label { get; init; }
+        public string Ref { get; set; }
+        public string Label { get; set; }
 
         public string InputRef
             => _regex.Match( Ref ).Value;

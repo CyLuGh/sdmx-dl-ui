@@ -2,7 +2,7 @@
 {
     public class CodeLabel
     {
-        public string Code { get; init; }
-        public string Label { get; init; }
+        public string Code { get; set; }
+        public string Label { get; set; }
     }
 }

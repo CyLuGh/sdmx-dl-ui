@@ -2,6 +2,6 @@
 {
     public class SeriesKey
     {
-        public string Series { get; init; }
+        public string Series { get; set; }
     }
 }

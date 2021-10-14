@@ -21,7 +21,7 @@ namespace sdmx_dl_ui.ViewModels
 {
     public class SeriesDisplayViewModel : ReactiveObject, IActivatableViewModel, IEquatable<SeriesDisplayViewModel>
     {
-        [Reactive] public string Key { get; init; }
+        [Reactive] public string Key { get; set; }
         [Reactive] public List<Axis> XAxes { get; set; }
 
         [Reactive] public string PeriodFormat { get; set; } = "yyyy-MM";
