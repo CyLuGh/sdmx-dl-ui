@@ -247,6 +247,7 @@ namespace sdmx_dl_ui.ViewModels
 
                     if ( framework?.EndsWith( "v5.0" ) == true )
                     {
+                        // Create property file to avoid encoding problems when getting results from PowerShell
                         var filePath = Path.Combine( AppContext.BaseDirectory , "sdmx-dl.properties" );
                         File.WriteAllLines( filePath , new[] { "sun.stdout.encoding=UTF-8" } );
                     }
