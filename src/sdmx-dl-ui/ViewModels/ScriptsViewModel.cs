@@ -12,6 +12,9 @@ using Splat;
 using System.Windows;
 using sdmx_dl_ui.Views.Infrastructure;
 using MaterialDesignThemes.Wpf;
+using System.Reflection;
+using System.Runtime.Versioning;
+using System.IO;
 
 namespace sdmx_dl_ui.ViewModels
 {
@@ -40,6 +43,7 @@ namespace sdmx_dl_ui.ViewModels
 
         public string ResultingKey { [ObservableAsProperty] get; }
 
+        public ReactiveCommand<Unit , Unit> CheckRuntimeCommand { get; private set; }
         public ReactiveCommand<Unit , string> CheckScriptCommand { get; private set; }
         public ReactiveCommand<Unit , Source[]> RetrieveSourcesCommand { get; private set; }
         public ReactiveCommand<Source , Flow[]> RetrieveFlowsCommand { get; private set; }
@@ -65,6 +69,9 @@ namespace sdmx_dl_ui.ViewModels
             SnackbarMessageQueue = new SnackbarMessageQueue();
 
             InitializeCommands( this );
+
+            CheckRuntimeCommand
+                .InvokeCommand( CheckScriptCommand );
 
             CheckScriptCommand
                 .Select( _ => Unit.Default )
@@ -93,6 +100,7 @@ namespace sdmx_dl_ui.ViewModels
                 } );
 
             Observable.CombineLatest(
+                CheckRuntimeCommand.IsExecuting ,
                 CheckScriptCommand.IsExecuting ,
                 RetrieveSourcesCommand.IsExecuting ,
                 RetrieveFlowsCommand.IsExecuting ,
@@ -223,12 +231,28 @@ namespace sdmx_dl_ui.ViewModels
                     .DisposeWith( disposables );
 
                 Observable.Return( Unit.Default )
-                    .InvokeCommand( CheckScriptCommand );
+                    .InvokeCommand( CheckRuntimeCommand );
             } );
         }
 
         private static void InitializeCommands( ScriptsViewModel @this )
         {
+            @this.CheckRuntimeCommand = ReactiveCommand.CreateFromObservable( () =>
+                Observable.Start( () =>
+                {
+                    var framework = Assembly
+                                   .GetEntryAssembly()?
+                                   .GetCustomAttribute<TargetFrameworkAttribute>()?
+                                   .FrameworkName;
+
+                    if ( framework?.EndsWith( "v5.0" ) == true )
+                    {
+                        // Create property file to avoid encoding problems when getting results from PowerShell
+                        var filePath = Path.Combine( AppContext.BaseDirectory , "sdmx-dl.properties" );
+                        File.WriteAllLines( filePath , new[] { "sun.stdout.encoding=UTF-8" } );
+                    }
+                } ) );
+
             @this.CheckScriptCommand = ReactiveCommand.CreateFromObservable( () =>
                 Observable.Start( () =>
                 {
