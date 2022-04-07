@@ -1,6 +1,6 @@
 ﻿using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
-using sdmx_dl_ui.Models;
+using sdmx_dl_engine.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

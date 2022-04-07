@@ -1,9 +1,8 @@
 ﻿using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
-using sdmx_dl_ui.Models;
+using sdmx_dl_engine.Models;
 using System;
 using System.Linq;
-using System.Management.Automation;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -15,13 +14,14 @@ using MaterialDesignThemes.Wpf;
 using System.Reflection;
 using System.Runtime.Versioning;
 using System.IO;
+using sdmx_dl_engine;
 
 namespace sdmx_dl_ui.ViewModels
 {
     public class ScriptsViewModel : ReactiveObject, IActivatableViewModel
     {
         public ViewModelActivator Activator { get; }
-        internal SnackbarMessageQueue SnackbarMessageQueue { get; }
+        internal Engine Engine { get; }
 
         public bool SourcesEnabled { [ObservableAsProperty] get; }
         public bool FlowsEnabled { [ObservableAsProperty] get; }
@@ -43,7 +43,6 @@ namespace sdmx_dl_ui.ViewModels
 
         public string ResultingKey { [ObservableAsProperty] get; }
 
-        public ReactiveCommand<Unit , Unit> CheckRuntimeCommand { get; private set; }
         public ReactiveCommand<Unit , string> CheckScriptCommand { get; private set; }
         public ReactiveCommand<Unit , Source[]> RetrieveSourcesCommand { get; private set; }
         public ReactiveCommand<Source , Flow[]> RetrieveFlowsCommand { get; private set; }
@@ -51,8 +50,10 @@ namespace sdmx_dl_ui.ViewModels
         public ReactiveCommand<(Source, Flow, Dimension[]) , string[][]> RetrieveKeysCommand { get; private set; }
         public ReactiveCommand<string , Unit> CopyToClipboardCommand { get; private set; }
         public ReactiveCommand<Unit , Unit> LookupKeyCommand { get; private set; }
-        public ReactiveCommand<string , Unit> ShowMessageCommand { get; private set; }
+        public ReactiveCommand<string , Unit> ShowExceptionCommand { get; private set; }
 
+        internal Interaction<string , Unit> ShowExceptionInteraction { get; }
+            = new Interaction<string , Unit>( RxApp.MainThreadScheduler );
         internal Interaction<Unit , Unit> ClosePopupInteraction { get; }
             = new Interaction<Unit , Unit>( RxApp.MainThreadScheduler );
 
@@ -63,15 +64,15 @@ namespace sdmx_dl_ui.ViewModels
         public ScriptsViewModel()
         {
             Activator = new ViewModelActivator();
+            Engine = new Engine();
+
             DimensionsOrderingViewModel = new DimensionsOrderingViewModel();
             MainDisplayViewModel = new MainDisplayViewModel();
             KeyDragHandler = new KeyDragHandler();
-            SnackbarMessageQueue = new SnackbarMessageQueue();
 
             InitializeCommands( this );
 
-            CheckRuntimeCommand
-                .InvokeCommand( CheckScriptCommand );
+            ShowExceptionInteraction.RegisterHandler( ctx => ctx.SetOutput( Unit.Default ) );
 
             CheckScriptCommand
                 .Select( _ => Unit.Default )
@@ -100,7 +101,6 @@ namespace sdmx_dl_ui.ViewModels
                 } );
 
             Observable.CombineLatest(
-                CheckRuntimeCommand.IsExecuting ,
                 CheckScriptCommand.IsExecuting ,
                 RetrieveSourcesCommand.IsExecuting ,
                 RetrieveFlowsCommand.IsExecuting ,
@@ -231,56 +231,33 @@ namespace sdmx_dl_ui.ViewModels
                     .DisposeWith( disposables );
 
                 Observable.Return( Unit.Default )
-                    .InvokeCommand( CheckRuntimeCommand );
+                    .InvokeCommand( CheckScriptCommand );
             } );
         }
 
         private static void InitializeCommands( ScriptsViewModel @this )
         {
-            @this.CheckRuntimeCommand = ReactiveCommand.CreateFromObservable( () =>
-                Observable.Start( () =>
-                {
-                    var framework = Assembly
-                                   .GetEntryAssembly()?
-                                   .GetCustomAttribute<TargetFrameworkAttribute>()?
-                                   .FrameworkName;
-
-                    if ( framework?.EndsWith( "v5.0" ) == true )
-                    {
-                        // Create property file to avoid encoding problems when getting results from PowerShell
-                        var filePath = Path.Combine( AppContext.BaseDirectory , "sdmx-dl.properties" );
-                        File.WriteAllLines( filePath , new[] { "sun.stdout.encoding=UTF-8" } );
-                    }
-                } ) );
-
             @this.CheckScriptCommand = ReactiveCommand.CreateFromObservable( () =>
                 Observable.Start( () =>
                 {
-                    PowerShell.Create()
-                        .AddCommand( "Set-ExecutionPolicy" )
-                        .AddParameter( "Scope" , "CurrentUser" )
-                        .AddParameter( "ExecutionPolicy" , "Unrestricted" )
-                        .Invoke();
-
-                    var res = PowerShell.Create()
-                        .AddCommand( "sdmx-dl" )
-                        .AddParameter( "V" )
-                        .Invoke();
-
-                    return res.Count > 0 ? res[0].ToString() : string.Empty;
+                    var check = @this.Engine.CheckVersion();
+                    return check.Match( r => r.Split( Environment.NewLine )[0] , e => e.Message );
                 } ) );
 
             @this.RetrieveSourcesCommand = ReactiveCommand.CreateFromObservable( () =>
-                Observable.Start( () => PowerShellRunner.Query<Source>( "list" , "sources" ) ) );
+                Observable.Start( () => @this.Engine.Query<Source>( "list" , "sources" )
+                    .Match( r => r , _ => Array.Empty<Source>() ) ) );
 
             @this.RetrieveFlowsCommand = ReactiveCommand.CreateFromObservable( ( Source source ) =>
-                Observable.Start( () => PowerShellRunner.Query<Flow>( "list" , "flows" , source.Name ) ) );
+                Observable.Start( () => @this.Engine.Query<Flow>( "list" , "flows" , source.Name )
+                    .Match( r => r , _ => Array.Empty<Flow>() ) ) );
 
             @this.RetrieveDimensionsCommand = ReactiveCommand.CreateFromObservable( ( (Source, Flow) t ) =>
                 Observable.Start( () =>
                 {
                     var (source, flow) = t;
-                    return PowerShellRunner.Query<Dimension>( "list" , "concepts" , source.Name , flow.Ref );
+                    return @this.Engine.Query<Dimension>( "list" , "concepts" , source.Name , flow.Ref )
+                        .Match( r => r , _ => Array.Empty<Dimension>() );
                 } ) );
 
             @this.RetrieveKeysCommand = ReactiveCommand.CreateFromObservable( ( (Source, Flow, Dimension[]) t ) =>
@@ -292,7 +269,8 @@ namespace sdmx_dl_ui.ViewModels
                     var key = string.Join( "." , Enumerable.Range( 0 , count )
                         .Select( _ => string.Empty ) );
 
-                    var keys = PowerShellRunner.Query<SeriesKey>( "fetch" , "keys" , source.Name , flow.Ref , key );
+                    var keys = @this.Engine.Query<SeriesKey>( "fetch" , "keys" , source.Name , flow.Ref , key )
+                        .Match( r => r , _ => Array.Empty<SeriesKey>() );
 
                     var splits = keys.AsParallel()
                         .Select( k => k.Series.Split( '.' ) )
@@ -319,8 +297,8 @@ namespace sdmx_dl_ui.ViewModels
                 await @this.ClosePopupInteraction.Handle( Unit.Default );
             } );
 
-            @this.ShowMessageCommand = ReactiveCommand.Create( ( string msg )
-                => @this.SnackbarMessageQueue.Enqueue( msg ) );
+            @this.ShowExceptionCommand = ReactiveCommand.CreateFromObservable( ( string msg )
+                => @this.ShowExceptionInteraction.Handle( msg ) );
         }
     }
 }

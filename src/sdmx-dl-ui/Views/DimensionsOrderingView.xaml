@@ -18,8 +18,8 @@
             BorderThickness="1"
             BorderBrush="{DynamicResource MaterialDesignDivider}"
             Background="{DynamicResource MaterialDesignBackground}">
-        <TabControl mah:TabControlHelper.Underlined="TabPanel">
-            <TabItem Header="Explorer">
+        <mah:MetroTabControl mah:TabControlHelper.Underlined="TabPanel">
+            <mah:MetroTabItem Header="Explorer">
                 <TreeView x:Name="TreeViewDimensions"
                           VirtualizingStackPanel.IsVirtualizing="True"
                           HorizontalAlignment="Stretch"
@@ -52,8 +52,8 @@
                         </HierarchicalDataTemplate>
                     </TreeView.ItemTemplate>
                 </TreeView>
-            </TabItem>
-            <TabItem Header="Dimensions">
+            </mah:MetroTabItem>
+            <mah:MetroTabItem Header="Dimensions">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition />
@@ -92,7 +92,7 @@
                         </Button>
                     </UniformGrid>
                 </Grid>
-            </TabItem>
-        </TabControl>
+            </mah:MetroTabItem>
+        </mah:MetroTabControl>
     </Border>
 </rxui:ReactiveUserControl>
