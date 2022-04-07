@@ -61,7 +61,7 @@ namespace sdmx_dl_ui.ViewModels
 
                      var (source, flow, concept) = t;
                      return Locator.Current.GetService<ScriptsViewModel>().Engine
-                        .Query<CodeLabel>( "list" , "codes" , source , flow , concept )
+                        .ListCodes(source, flow, concept )
                         .Match( r => r , _ => Array.Empty<CodeLabel>() );
                  } ) );
 

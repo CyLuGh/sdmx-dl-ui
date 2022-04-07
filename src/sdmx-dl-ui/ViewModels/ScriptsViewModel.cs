@@ -245,18 +245,18 @@ namespace sdmx_dl_ui.ViewModels
                 } ) );
 
             @this.RetrieveSourcesCommand = ReactiveCommand.CreateFromObservable( () =>
-                Observable.Start( () => @this.Engine.Query<Source>( "list" , "sources" )
+                Observable.Start( () => @this.Engine.ListSources()
                     .Match( r => r , _ => Array.Empty<Source>() ) ) );
 
             @this.RetrieveFlowsCommand = ReactiveCommand.CreateFromObservable( ( Source source ) =>
-                Observable.Start( () => @this.Engine.Query<Flow>( "list" , "flows" , source.Name )
+                Observable.Start( () => @this.Engine.ListFlows( source )
                     .Match( r => r , _ => Array.Empty<Flow>() ) ) );
 
             @this.RetrieveDimensionsCommand = ReactiveCommand.CreateFromObservable( ( (Source, Flow) t ) =>
                 Observable.Start( () =>
                 {
                     var (source, flow) = t;
-                    return @this.Engine.Query<Dimension>( "list" , "concepts" , source.Name , flow.Ref )
+                    return @this.Engine.ListConcepts( source , flow )
                         .Match( r => r , _ => Array.Empty<Dimension>() );
                 } ) );
 
@@ -265,13 +265,10 @@ namespace sdmx_dl_ui.ViewModels
                 {
                     var (source, flow, dimensions) = t;
 
-                    var count = dimensions.Count( x => x.Position.HasValue );
-                    var key = string.Join( "." , Enumerable.Range( 0 , count )
-                        .Select( _ => string.Empty ) );
-
-                    var keys = @this.Engine.Query<SeriesKey>( "fetch" , "keys" , source.Name , flow.Ref , key )
+                    var keys = @this.Engine.FetchKeys(source, flow, dimensions )
                         .Match( r => r , _ => Array.Empty<SeriesKey>() );
 
+                    var count = dimensions.Count( x => x.Position.HasValue );
                     var splits = keys.AsParallel()
                         .Select( k => k.Series.Split( '.' ) )
                         .ToArray();

@@ -217,7 +217,7 @@ namespace sdmx_dl_ui.ViewModels
         {
             @this.RetrieveDataSeriesCommand = ReactiveCommand.CreateFromObservable( ( string key ) =>
                 Observable.Start( () => Locator.Current.GetService<ScriptsViewModel>().Engine
-                        .Query<DataSeries>( new[] { "fetch" , "data" }.Concat( key.Split( ' ' ) ).ToArray() )
+                        .FetchData( key )
                         .Match( r => r , err => throw err )
                     .Select( d => new DataSeriesViewModel( d ) )
                     .OrderBy( x => x.Series ).ThenBy( x => x.ObsPeriod ).ToArray()
@@ -225,12 +225,12 @@ namespace sdmx_dl_ui.ViewModels
 
             @this.RetrieveMetaSeriesCommand = ReactiveCommand.CreateFromObservable( ( string key ) =>
                Observable.Start( () => Locator.Current.GetService<ScriptsViewModel>().Engine
-                            .Query<MetaSeries>( new[] { "fetch" , "meta" }.Concat( key.Split( ' ' ) ).ToArray() )
+                            .FetchMeta( key )
                             .Match( r => r , err => throw err )
                ) );
 
             @this.RetrieveDataSeriesCommand.ThrownExceptions
-                .Do( exc => Observable.Return(exc.Message).InvokeCommand( Locator.Current.GetService<ScriptsViewModel>() , x => x.ShowExceptionCommand ))
+                .Do( exc => Observable.Return( exc.Message ).InvokeCommand( Locator.Current.GetService<ScriptsViewModel>() , x => x.ShowExceptionCommand ) )
                 .Select( _ => true )
                 .ToPropertyEx( @this , x => x.HasEncounteredError , scheduler: RxApp.MainThreadScheduler );
 
@@ -268,14 +268,14 @@ namespace sdmx_dl_ui.ViewModels
 
             var source = elements[0];
             var flow = elements[1];
-            var dimensions = engine.Query<Dimension>( "list" , "concepts" , source , flow )
+            var dimensions = engine.ListConcepts( source , flow )
                 .Match( r => r , _ => Array.Empty<Dimension>() );
 
             var details = dimensions
                 .AsParallel()
                 .Where( d => d.Coded && d.Type.Equals( "dimension" , StringComparison.CurrentCultureIgnoreCase ) )
                 .ToDictionary( d => d.Concept ,
-                               d => engine.Query<CodeLabel>( "list" , "codes" , source , flow , d.Concept )
+                               d => engine.ListCodes( source , flow , d.Concept )
                                 .Match( r => r , _ => Array.Empty<CodeLabel>() )
             );
 

@@ -1,0 +1,39 @@
+name: SDMX-DL-UI CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+env:
+  configuration: Release
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+
+  steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Install .NET
+        uses: actions/setup-dotnet@v1.8.0
+        with:
+          dotnet-version: 6.0.x
+
+      - name: NuGet Restore
+        run: dotnet restore
+        working-directory: src
+
+      - name: Build
+        run: dotnet build --configuration=Release --verbosity=minimal --no-restore
+        working-directory: src/EngineTests
+
+      - name: Unit Tests
+        run: dotnet test --configuration=Release --verbosity=minimal --no-build
+        working-directory: src/EngineTests
