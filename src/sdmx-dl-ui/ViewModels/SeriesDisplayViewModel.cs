@@ -5,7 +5,7 @@ using LiveChartsCore.SkiaSharpView;
 using MoreLinq;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
-using sdmx_dl_ui.Models;
+using sdmx_dl_engine.Models;
 using Splat;
 using System;
 using System.Collections.Generic;
@@ -219,13 +219,17 @@ namespace sdmx_dl_ui.ViewModels
         private static void InitializeCommands( SeriesDisplayViewModel @this )
         {
             @this.RetrieveDataSeriesCommand = ReactiveCommand.CreateFromObservable( ( string key ) =>
-                Observable.Start( () => PowerShellRunner.Query<DataSeries>( new[] { "fetch" , "data" }.Concat( key.Split( ' ' ) ).ToArray() )
+                Observable.Start( () => Locator.Current.GetService<ScriptsViewModel>().Engine
+                        .Query<DataSeries>( new[] { "fetch" , "data" }.Concat( key.Split( ' ' ) ).ToArray() )
+                        .Match( r => r , _ => Array.Empty<DataSeries>() )
                     .Select( d => new DataSeriesViewModel( d ) )
                     .OrderBy( x => x.Series ).ThenBy( x => x.ObsPeriod ).ToArray()
                  ) );
 
             @this.RetrieveMetaSeriesCommand = ReactiveCommand.CreateFromObservable( ( string key ) =>
-               Observable.Start( () => PowerShellRunner.Query<MetaSeries>( new[] { "fetch" , "meta" }.Concat( key.Split( ' ' ) ).ToArray() )
+               Observable.Start( () => Locator.Current.GetService<ScriptsViewModel>().Engine
+                            .Query<MetaSeries>( new[] { "fetch" , "meta" }.Concat( key.Split( ' ' ) ).ToArray() )
+                            .Match( r => r , _ => Array.Empty<MetaSeries>() )
                ) );
 
             @this.RetrieveDataSeriesCommand.ThrownExceptions
@@ -262,14 +266,19 @@ namespace sdmx_dl_ui.ViewModels
             if ( elements.Length != 3 )
                 return Array.Empty<CodeLabelInfo>();
 
+            var engine = Locator.Current.GetService<ScriptsViewModel>().Engine;
+
             var source = elements[0];
             var flow = elements[1];
-            var dimensions = PowerShellRunner.Query<Dimension>( "list" , "concepts" , source , flow );
+            var dimensions = engine.Query<Dimension>( "list" , "concepts" , source , flow )
+                .Match( r => r , _ => Array.Empty<Dimension>() );
 
             var details = dimensions
                 .AsParallel()
                 .Where( d => d.Coded && d.Type.Equals( "dimension" , StringComparison.CurrentCultureIgnoreCase ) )
-                .ToDictionary( d => d.Concept , d => PowerShellRunner.Query<CodeLabel>( "list" , "codes" , source , flow , d.Concept )
+                .ToDictionary( d => d.Concept ,
+                               d => engine.Query<CodeLabel>( "list" , "codes" , source , flow , d.Concept )
+                                .Match( r => r , _ => Array.Empty<CodeLabel>() )
             );
 
             var parsed = dataKeys.SelectMany( dk =>

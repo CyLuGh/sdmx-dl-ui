@@ -10,7 +10,7 @@ using System.Windows.Media.Animation;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using sdmx_dl_ui.Exceptions;
-using sdmx_dl_ui.Models;
+using sdmx_dl_engine.Models;
 using Splat;
 
 namespace sdmx_dl_ui.ViewModels
@@ -60,7 +60,9 @@ namespace sdmx_dl_ui.ViewModels
                          throw new DuplicateQueryException( "Shouldn't retrieve values again" );
 
                      var (source, flow, concept) = t;
-                     return PowerShellRunner.Query<CodeLabel>( "list" , "codes" , source , flow , concept );
+                     return Locator.Current.GetService<ScriptsViewModel>().Engine
+                        .Query<CodeLabel>( "list" , "codes" , source , flow , concept )
+                        .Match( r => r , _ => Array.Empty<CodeLabel>() );
                  } ) );
 
             @this.RetrieveCodesCommand

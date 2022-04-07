@@ -1,9 +1,8 @@
 ﻿using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
-using sdmx_dl_ui.Models;
+using sdmx_dl_engine.Models;
 using System;
 using System.Linq;
-using System.Management.Automation;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -15,6 +14,7 @@ using MaterialDesignThemes.Wpf;
 using System.Reflection;
 using System.Runtime.Versioning;
 using System.IO;
+using sdmx_dl_engine;
 
 namespace sdmx_dl_ui.ViewModels
 {
@@ -22,6 +22,7 @@ namespace sdmx_dl_ui.ViewModels
     {
         public ViewModelActivator Activator { get; }
         internal SnackbarMessageQueue SnackbarMessageQueue { get; }
+        internal Engine Engine { get; }
 
         public bool SourcesEnabled { [ObservableAsProperty] get; }
         public bool FlowsEnabled { [ObservableAsProperty] get; }
@@ -63,6 +64,8 @@ namespace sdmx_dl_ui.ViewModels
         public ScriptsViewModel()
         {
             Activator = new ViewModelActivator();
+            Engine = new Engine();
+
             DimensionsOrderingViewModel = new DimensionsOrderingViewModel();
             MainDisplayViewModel = new MainDisplayViewModel();
             KeyDragHandler = new KeyDragHandler();
@@ -256,31 +259,24 @@ namespace sdmx_dl_ui.ViewModels
             @this.CheckScriptCommand = ReactiveCommand.CreateFromObservable( () =>
                 Observable.Start( () =>
                 {
-                    PowerShell.Create()
-                        .AddCommand( "Set-ExecutionPolicy" )
-                        .AddParameter( "Scope" , "CurrentUser" )
-                        .AddParameter( "ExecutionPolicy" , "Unrestricted" )
-                        .Invoke();
-
-                    var res = PowerShell.Create()
-                        .AddCommand( "sdmx-dl" )
-                        .AddParameter( "V" )
-                        .Invoke();
-
-                    return res.Count > 0 ? res[0].ToString() : string.Empty;
+                    var check = @this.Engine.CheckVersion();
+                    return check.Match( r => r.Split( Environment.NewLine )[0] , e => e.Message );
                 } ) );
 
             @this.RetrieveSourcesCommand = ReactiveCommand.CreateFromObservable( () =>
-                Observable.Start( () => PowerShellRunner.Query<Source>( "list" , "sources" ) ) );
+                Observable.Start( () => @this.Engine.Query<Source>( "list" , "sources" )
+                    .Match( r => r , _ => Array.Empty<Source>() ) ) );
 
             @this.RetrieveFlowsCommand = ReactiveCommand.CreateFromObservable( ( Source source ) =>
-                Observable.Start( () => PowerShellRunner.Query<Flow>( "list" , "flows" , source.Name ) ) );
+                Observable.Start( () => @this.Engine.Query<Flow>( "list" , "flows" , source.Name )
+                    .Match( r => r , _ => Array.Empty<Flow>() ) ) );
 
             @this.RetrieveDimensionsCommand = ReactiveCommand.CreateFromObservable( ( (Source, Flow) t ) =>
                 Observable.Start( () =>
                 {
                     var (source, flow) = t;
-                    return PowerShellRunner.Query<Dimension>( "list" , "concepts" , source.Name , flow.Ref );
+                    return @this.Engine.Query<Dimension>( "list" , "concepts" , source.Name , flow.Ref )
+                        .Match( r => r , _ => Array.Empty<Dimension>() );
                 } ) );
 
             @this.RetrieveKeysCommand = ReactiveCommand.CreateFromObservable( ( (Source, Flow, Dimension[]) t ) =>
@@ -292,7 +288,8 @@ namespace sdmx_dl_ui.ViewModels
                     var key = string.Join( "." , Enumerable.Range( 0 , count )
                         .Select( _ => string.Empty ) );
 
-                    var keys = PowerShellRunner.Query<SeriesKey>( "fetch" , "keys" , source.Name , flow.Ref , key );
+                    var keys = @this.Engine.Query<SeriesKey>( "fetch" , "keys" , source.Name , flow.Ref , key )
+                        .Match( r => r , _ => Array.Empty<SeriesKey>() );
 
                     var splits = keys.AsParallel()
                         .Select( k => k.Series.Split( '.' ) )

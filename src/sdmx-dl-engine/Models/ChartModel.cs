@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace sdmx_dl_ui.Models
+namespace sdmx_dl_engine.Models
 {
     public class ChartModel
     {
