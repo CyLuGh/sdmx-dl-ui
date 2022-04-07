@@ -2,7 +2,7 @@
 
 namespace sdmx_dl_engine.Models
 {
-    public class DataSeries
+    public record DataSeries
     {
         public string Series { get; set; } = string.Empty;
         public string ObsAttributes { get; set; } = string.Empty;

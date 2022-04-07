@@ -5,6 +5,7 @@
                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
                  xmlns:rxui="http://reactiveui.net"
+                 xmlns:toast="clr-namespace:Notification.Wpf.Controls;assembly=Notification.Wpf"
                  xmlns:local="clr-namespace:sdmx_dl_ui"
                  xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
                  mc:Ignorable="d"
@@ -29,6 +30,16 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
             </Grid.RowDefinitions>
+
+            <toast:NotificationArea x:Name="WindowArea"
+                                    Position="{Binding MessagePosition,RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                    MaxItems="{Binding MaxItems, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                    CollapseProgressAuto="{Binding CollapseProgressIfMoreRows, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                    Panel.ZIndex="999"
+                                    Grid.Row="0"
+                                    Grid.RowSpan="3"
+                                    Grid.Column="0"
+                                    Grid.ColumnSpan="3"/>
 
             <ComboBox x:Name="ComboBoxSources"
                       DisplayMemberPath="Description"
@@ -129,10 +140,6 @@
                 <Rectangle />
             </DockPanel>
         </materialDesign:ColorZone>
-
-        <materialDesign:Snackbar x:Name="Snackbar"
-                                 Grid.Row="0"
-                                 Grid.RowSpan="2" />
 
         <UniformGrid x:Name="FaultedGrid"
                      Visibility="Collapsed"

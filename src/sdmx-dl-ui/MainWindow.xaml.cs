@@ -1,4 +1,5 @@
 ﻿using MahApps.Metro.Controls;
+using Notification.Wpf;
 using ReactiveMarbles.ObservableEvents;
 using ReactiveUI;
 using sdmx_dl_ui.ViewModels;
@@ -18,9 +19,13 @@ namespace sdmx_dl_ui
 
         object IViewFor.ViewModel { get => ViewModel; set => ViewModel = (ScriptsViewModel) value; }
 
+        private readonly NotificationManager _notificationManager;
+
         public MainWindow()
         {
             InitializeComponent();
+
+            _notificationManager = new NotificationManager();
 
             this.WhenActivated( disposables =>
             {
@@ -36,11 +41,6 @@ namespace sdmx_dl_ui
 
         private static void PopulateFromViewModel( MainWindow view , ScriptsViewModel viewModel , CompositeDisposable disposables )
         {
-            view.OneWayBind( viewModel ,
-                vm => vm.SnackbarMessageQueue ,
-                v => v.Snackbar.MessageQueue )
-                .DisposeWith( disposables );
-
             view.OneWayBind( viewModel ,
                 vm => vm.IsWorking ,
                 v => v.ProgressBarWorking.Visibility ,
@@ -113,6 +113,13 @@ namespace sdmx_dl_ui
                 {
                     view.TextBoxLookup.Text = string.Empty;
                     view.PopupBoxLookup.IsPopupOpen = false;
+                    ctx.SetOutput( Unit.Default );
+                } )
+                .DisposeWith( disposables );
+
+            viewModel.ShowExceptionInteraction.RegisterHandler( ctx =>
+                {
+                    view._notificationManager.Show( ctx.Input , NotificationType.Error , "WindowArea" , TimeSpan.FromMinutes( 5 ) , NotificationTextTrimType.NoTrim );
                     ctx.SetOutput( Unit.Default );
                 } )
                 .DisposeWith( disposables );

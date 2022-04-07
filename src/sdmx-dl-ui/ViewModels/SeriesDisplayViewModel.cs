@@ -67,9 +67,6 @@ namespace sdmx_dl_ui.ViewModels
                 .DistinctUntilChanged()
                 .InvokeCommand( RetrieveDataSeriesCommand );
 
-            //this.WhenAnyValue( x => x.Key )
-            //    .Delay( TimeSpan.FromMilliseconds( 100 ) )
-
             RetrieveDataSeriesCommand
                 .WhereNotNull()
                 .Select( _ => this.Key )
@@ -221,7 +218,7 @@ namespace sdmx_dl_ui.ViewModels
             @this.RetrieveDataSeriesCommand = ReactiveCommand.CreateFromObservable( ( string key ) =>
                 Observable.Start( () => Locator.Current.GetService<ScriptsViewModel>().Engine
                         .Query<DataSeries>( new[] { "fetch" , "data" }.Concat( key.Split( ' ' ) ).ToArray() )
-                        .Match( r => r , _ => Array.Empty<DataSeries>() )
+                        .Match( r => r , err => throw err )
                     .Select( d => new DataSeriesViewModel( d ) )
                     .OrderBy( x => x.Series ).ThenBy( x => x.ObsPeriod ).ToArray()
                  ) );
@@ -229,16 +226,17 @@ namespace sdmx_dl_ui.ViewModels
             @this.RetrieveMetaSeriesCommand = ReactiveCommand.CreateFromObservable( ( string key ) =>
                Observable.Start( () => Locator.Current.GetService<ScriptsViewModel>().Engine
                             .Query<MetaSeries>( new[] { "fetch" , "meta" }.Concat( key.Split( ' ' ) ).ToArray() )
-                            .Match( r => r , _ => Array.Empty<MetaSeries>() )
+                            .Match( r => r , err => throw err )
                ) );
 
             @this.RetrieveDataSeriesCommand.ThrownExceptions
+                .Do( exc => Observable.Return(exc.Message).InvokeCommand( Locator.Current.GetService<ScriptsViewModel>() , x => x.ShowExceptionCommand ))
                 .Select( _ => true )
                 .ToPropertyEx( @this , x => x.HasEncounteredError , scheduler: RxApp.MainThreadScheduler );
 
             @this.RetrieveMetaSeriesCommand.ThrownExceptions
                 .Select( exc => exc.Message )
-                .InvokeCommand( Locator.Current.GetService<ScriptsViewModel>() , x => x.ShowMessageCommand );
+                .InvokeCommand( Locator.Current.GetService<ScriptsViewModel>() , x => x.ShowExceptionCommand );
 
             @this.ParseKeyCommand = ReactiveCommand.CreateFromObservable( ( (string, string[]) t ) =>
                 Observable.Start( () =>
@@ -249,7 +247,7 @@ namespace sdmx_dl_ui.ViewModels
 
             @this.ParseKeyCommand.ThrownExceptions
                 .Select( exc => $"Couldn't parse key: {exc.Message}" )
-                .InvokeCommand( Locator.Current.GetService<ScriptsViewModel>() , x => x.ShowMessageCommand );
+                .InvokeCommand( Locator.Current.GetService<ScriptsViewModel>() , x => x.ShowExceptionCommand );
         }
 
         /// <summary>

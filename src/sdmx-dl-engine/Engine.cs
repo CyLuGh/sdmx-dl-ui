@@ -50,7 +50,11 @@ namespace sdmx_dl_engine
             if ( process.ExitCode != 0 )
             {
                 var error = process.StandardError.ReadToEnd();
-                return Error.New( error );
+                return Error.New( new StringBuilder().Append( "Error running sdmx-dl " )
+                    .AppendJoin( ' ' , arguments )
+                    .Append( ": " )
+                    .Append( error )
+                    .ToString() );
             }
 
             return output;

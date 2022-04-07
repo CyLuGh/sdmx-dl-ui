@@ -18,23 +18,17 @@
 	</PropertyGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-		<PackageReference Include="gong-wpf-dragdrop" Version="3.1.1" />
-		<PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-beta.101" />
-		<PackageReference Include="MahApps.Metro" Version="2.4.9" />
-		<PackageReference Include="MaterialDesignThemes" Version="4.4.0" />
-		<PackageReference Include="MaterialDesignThemes.MahApps" Version="0.2.1" />
-		<PackageReference Include="morelinq" Version="3.3.2" />
-		<PackageReference Include="ReactiveMarbles.ObservableEvents.SourceGenerator" Version="1.1.4">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="ReactiveUI.Fody" Version="16.2.6" />
-		<PackageReference Include="ReactiveUI.WPF" Version="16.2.6" />
-		<PackageReference Include="Splat.NLog" Version="14.2.1" />
+		<PackageReference Include="ReactiveUI.Fody" Version="16.4.15" />
+		<PackageReference Include="ReactiveUI.WPF" Version="16.4.15" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0-windows'">
-		<PackageReference Include="gong-wpf-dragdrop" Version="3.1.1" />
+		<PackageReference Include="ReactiveUI.Fody" Version="17.1.50" />
+		<PackageReference Include="ReactiveUI.WPF" Version="17.1.50" />
+	</ItemGroup>
+
+	<ItemGroup>
+	<PackageReference Include="gong-wpf-dragdrop" Version="3.1.1" />
 		<PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-beta.101" />
 		<PackageReference Include="MahApps.Metro" Version="2.4.9" />
 		<PackageReference Include="MaterialDesignThemes" Version="4.4.0" />
@@ -44,9 +38,8 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="ReactiveUI.Fody" Version="17.1.50" />
-		<PackageReference Include="ReactiveUI.WPF" Version="17.1.50" />
-		<PackageReference Include="Splat.NLog" Version="14.2.1" />
+	  <PackageReference Include="Notification.Wpf" Version="6.1.0.4" />
+	  <PackageReference Include="Splat.NLog" Version="14.2.1" />
 	</ItemGroup>
 
 	<ItemGroup>
