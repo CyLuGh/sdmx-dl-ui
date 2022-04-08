@@ -75,19 +75,14 @@ jobs:
         with:
           dotnet-version: 6.0.x
 
-      - uses: little-core-labs/get-git-tag@v3.0.1
-        id: tagname
-
       - name: Build
         run: dotnet publish -r win10-x64 -p:PublishSingleFile=true -p:PublishTrimmed=false --self-contained true -p:PublishReadyToRun=false --configuration Release
         working-directory: src/sdmx-dl-ui
 
-      - name: Zip
-        uses: papeloto/action-zip@v1
-        with:
-          files: src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/sdmx-dl-ui.exe src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/D3DCompiler_47_cor3.dll src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/libSkiaSharp.dll src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/PenImc_cor3.dll src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/PresentationNative_cor3.dll src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/vcruntime140_cor3.dll src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/wpfgfx_cor3.dll src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/res/
-          recursive: false
-          dest: sdmx-dl-ui.zip
+      - name: Clean pdb and Zip
+        run: |
+          rm src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/*.pdb
+          Compress-Archive -Path src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/* -DestinationPath sdmx-dl-ui.zip
 
       - name: Create Release
         id: create_release
