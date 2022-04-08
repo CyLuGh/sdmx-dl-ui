@@ -8,6 +8,13 @@
 		<LangVersion>10.0</LangVersion>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <PackageOutputPath>./nupkg</PackageOutputPath>
+		<Authors>Demortier Jeremy</Authors>
+		<Description>.NET encapsulation for SDMX-DL</Description>
+		<PackageLicenseExpression>EUPL-2.0</PackageLicenseExpression>
+  </PropertyGroup>
+
   <ItemGroup>
     <Folder Include="res\" />
   </ItemGroup>
