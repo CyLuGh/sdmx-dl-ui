@@ -85,7 +85,7 @@ jobs:
       - name: Zip
         uses: papeloto/action-zip@v1
         with:
-          files: src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/sdmx-dl-ui.exe src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/D3DCompiler_47_cor3.dll src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/libSkiaSharp.dll src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/PenImc_cor3.dll src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/PresentationNative_cor3.dll src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/vcruntime140_cor3.dll src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/wpfgfx_cor3.dll src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/res/sdmx-dl-3.0.0-beta.5-bin.jar
+          files: src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/sdmx-dl-ui.exe src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/D3DCompiler_47_cor3.dll src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/libSkiaSharp.dll src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/PenImc_cor3.dll src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/PresentationNative_cor3.dll src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/vcruntime140_cor3.dll src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/wpfgfx_cor3.dll src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/res/
           recursive: true
           dest: sdmx-dl-ui.zip
 
