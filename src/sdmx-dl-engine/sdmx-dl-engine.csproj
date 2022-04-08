@@ -12,7 +12,7 @@
     <PackageOutputPath>./nupkg</PackageOutputPath>
 		<Authors>Demortier Jeremy</Authors>
 		<Description>.NET encapsulation for SDMX-DL</Description>
-		<PackageLicenseExpression>EUPL-2.0</PackageLicenseExpression>
+		<PackageLicenseExpression>EUPL-1.2</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
