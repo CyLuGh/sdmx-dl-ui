@@ -3,8 +3,7 @@ name: SDMX-DL-UI DEPLOYMENT
 on:
   push:
     tags:
-      - 0.*
-      - 1.*
+      - '*'
 
 env:
   configuration: Release
@@ -60,3 +59,54 @@ jobs:
 
       - name: Push
         run: dotnet nuget push **/sdmx-dl-engine/nupkg/*.nupkg -k ${{secrets.NUGET_SDMX_KEY}} -s https://api.nuget.org/v3/index.json --skip-duplicate
+
+  release:
+    needs: build-and-test
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Install .NET
+        uses: actions/setup-dotnet@v1.8.0
+        with:
+          dotnet-version: 6.0.x
+
+      - uses: little-core-labs/get-git-tag@v3.0.1
+        id: tagname
+
+      - name: Build
+        run: dotnet publish -r win10-x64 -p:PublishSingleFile=true -p:PublishTrimmed=false --self-contained true -p:PublishReadyToRun=false --configuration Release
+        working-directory: src/sdmx-dl-ui
+
+      - name: Zip
+        uses: papeloto/action-zip@v1
+        with:
+          files: src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/*.dll src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/*.exe src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/res/sdmx-dl-3.0.0-beta.5-bin.jar
+          recursive: true
+          dest: sdmx-dl-ui.zip
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ${{ github.workspace }}/sdmx-dl-ui.zip
+          asset_name: sdmx-dl-ui.zip
+          asset_content_type: application/zip
