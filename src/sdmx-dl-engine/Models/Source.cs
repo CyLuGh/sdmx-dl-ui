@@ -16,14 +16,18 @@ namespace sdmx_dl_engine.Models
 
         public bool Equals( Source other )
         {
-            if ( other == null )
-                return false;
-
+            if ( other is null ) return false;
+            if ( ReferenceEquals( this , other ) ) return true;
             return Name.Equals( other.Name );
         }
 
         public override bool Equals( object obj )
-            => Equals( obj as Source );
+        {
+            if ( obj is null ) return false;
+            if ( ReferenceEquals( this , obj ) ) return true;
+            if ( obj.GetType() != this.GetType() ) return false;
+            return Equals( (Source) obj );
+        }
 
         public override int GetHashCode()
             => HashCode.Combine( Name );
