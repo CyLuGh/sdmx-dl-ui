@@ -17,6 +17,7 @@ namespace EngineTests
         public void Dispose()
         {
             File.Delete( Path.Combine( AppDomain.CurrentDomain.BaseDirectory , "sdmx-dl.properties" ) );
+            GC.SuppressFinalize( this );
         }
 
         [Fact]
@@ -54,6 +55,34 @@ namespace EngineTests
             {
                 f.Length.Should().Be( 3 );
                 f.Find( x => x.Code.Equals( "M" ) ).ShouldBeSome();
+            } );
+        }
+
+        [Fact]
+        public void TestFetchKeys()
+        {
+            var engine = new Engine();
+            var keys = engine.FetchKeys( "RNG" , "all:RNG(latest)" , "." );
+            keys.ShouldBeRight( k =>
+            {
+                k.Length.Should().Be( 9 );
+            } );
+        }
+
+        [Theory]
+        [InlineData( "M" , "0" , 48 )]
+        [InlineData( "A" , "1" , 4 )]
+        [InlineData( "D" , "2" , 1461 )]
+        [InlineData( "M" , "" , 144 )]
+        [InlineData( "" , "2" , 1513 )]
+        [InlineData( "" , "" , 4539 )]
+        public void TestFetchData( string freq , string index , int expectedCount )
+        {
+            var engine = new Engine();
+            var data = engine.FetchData( $"RNG all:RNG(latest) {freq}.{index}" );
+            data.ShouldBeRight( d =>
+            {
+                d.Length.Should().Be( expectedCount );
             } );
         }
     }
