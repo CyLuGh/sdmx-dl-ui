@@ -28,7 +28,7 @@ jobs:
 
       - name: NuGet restore
         run: dotnet restore
-        working-directory: src
+        working-directory: src/EngineTests
 
       - name: Build
         run: dotnet build --configuration=Release --verbosity=minimal --no-restore
