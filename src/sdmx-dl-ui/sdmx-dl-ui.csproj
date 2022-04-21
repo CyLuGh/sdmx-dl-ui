@@ -18,6 +18,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="AutoCompleteTextBox" Version="1.5.0" />
 		<PackageReference Include="ReactiveUI.Fody" Version="18.0.7" />
 		<PackageReference Include="ReactiveUI.WPF" Version="18.0.7" />
 		<PackageReference Include="gong-wpf-dragdrop" Version="3.1.1" />
@@ -32,6 +33,7 @@
 		</PackageReference>
 	  <PackageReference Include="Notification.Wpf" Version="6.1.0.4" />
 	  <PackageReference Include="Splat.NLog" Version="14.2.1" />
+	  <PackageReference Include="XamlFlair.WPF" Version="1.2.13" />
 	</ItemGroup>
 
 	<ItemGroup>

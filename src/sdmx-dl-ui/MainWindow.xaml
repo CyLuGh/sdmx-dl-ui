@@ -8,10 +8,27 @@
                  xmlns:toast="clr-namespace:Notification.Wpf.Controls;assembly=Notification.Wpf"
                  xmlns:local="clr-namespace:sdmx_dl_ui"
                  xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+                 xmlns:acb="http://wpfcontrols.com/"
+                 xmlns:engine="clr-namespace:sdmx_dl_engine.Models;assembly=sdmx-dl-engine"
+                 xmlns:xf="clr-namespace:XamlFlair;assembly=XamlFlair.WPF"
                  mc:Ignorable="d"
                  Title="sdmx-dl-ui"
                  Height="450"
                  Width="900">
+    <Window.Resources>
+        <DataTemplate x:Key="SourceTemplate" DataType="{x:Type engine:Source}">
+            <Grid>
+                <TextBlock Text="{Binding Path=Description}"/>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="FlowTemplate" DataType="{x:Type engine:Flow}">
+            <Grid>
+                <TextBlock Text="{Binding Path=Label}"/>
+            </Grid>
+        </DataTemplate>
+    </Window.Resources>
+
     <Grid Background="{DynamicResource MaterialDesignPaper}">
         <Grid.RowDefinitions>
             <RowDefinition />
@@ -41,28 +58,50 @@
                                     Grid.Column="0"
                                     Grid.ColumnSpan="3"/>
 
-            <ComboBox x:Name="ComboBoxSources"
-                      DisplayMemberPath="Description"
-                      mah:TextBoxHelper.Watermark="SOURCE"
-                      mah:TextBoxHelper.UseFloatingWatermark="True"
-                      Style="{DynamicResource MahApps.Styles.ComboBox}"
-                      Margin="10 10 10 5"
-                      Grid.Row="0"
-                      Grid.Column="0" />
+            <materialDesign:Card x:Name="CardSource"
+                                 xf:Animations.Primary="{xf:Animate BasedOn={StaticResource FadeInAndGrow},Event=None}"
+                                 xf:Animations.PrimaryBinding="{Binding Path=SourcesEnabled}"
+                                 xf:Animations.Secondary="{xf:Animate BasedOn={StaticResource FadeOutAndShrink},Event=None}"
+                                 xf:Animations.SecondaryBinding="{Binding Path=SourcesEnabled,Converter={StaticResource BoolInverterConverter}}"
+                                 Margin="10 10 10 5"
+                                 Grid.Row="0"
+                                 Grid.Column="0">
+                <StackPanel>
+                    <TextBlock Foreground="{StaticResource PrimaryHueDarkBrush}" Margin="5 5 0 0">SOURCE</TextBlock>
+                    <acb:AutoCompleteComboBox x:Name="ComboBoxSources"
+                                              HorizontalAlignment="Stretch"
+                                              DisplayMember="Description"
+                                              ItemTemplate="{StaticResource SourceTemplate}"
+                                              Style="{StaticResource MaterialAutoCompleteComboBox}"/>
+                </StackPanel>
+            </materialDesign:Card>
 
-            <ComboBox x:Name="ComboBoxFlows"
-                      DisplayMemberPath="Label"
-                      mah:TextBoxHelper.Watermark="FLOW"
-                      mah:TextBoxHelper.UseFloatingWatermark="True"
-                      Style="{DynamicResource MahApps.Styles.ComboBox}"
-                      Margin="10 5 10 10"
-                      Grid.Row="1"
-                      Grid.Column="0" />
+            <materialDesign:Card x:Name="CardFlow"
+                                 xf:Animations.Primary="{xf:Animate BasedOn={StaticResource FadeInAndGrow},Event=None}"
+                                 xf:Animations.PrimaryBinding="{Binding Path=FlowsEnabled}"
+                                 xf:Animations.Secondary="{xf:Animate BasedOn={StaticResource FadeOutAndShrink},Event=None}"
+                                 xf:Animations.SecondaryBinding="{Binding Path=FlowsEnabled,Converter={StaticResource BoolInverterConverter}}"
+                                 Margin="10 5 10 10"
+                                 Grid.Row="1"
+                                 Grid.Column="0">
+                <StackPanel>
+                    <TextBlock Foreground="{StaticResource PrimaryHueDarkBrush}" Margin="5 5 0 0">FLOW</TextBlock>
+                    <acb:AutoCompleteComboBox x:Name="ComboBoxFlows"
+                                              HorizontalAlignment="Stretch"
+                                              DisplayMember="Label"
+                                              ItemTemplate="{StaticResource FlowTemplate}"
+                                              Style="{StaticResource MaterialAutoCompleteComboBox}"/>
+                </StackPanel>
+            </materialDesign:Card>
 
             <rxui:ViewModelViewHost x:Name="DimensionsOrderingViewHost"
                                     Margin="10 5 10 10"
                                     Grid.Row="2"
                                     Grid.Column="0"
+                                    xf:Animations.Primary="{xf:Animate BasedOn={StaticResource FadeInAndGrow},Event=None}"
+                                    xf:Animations.PrimaryBinding="{Binding Path=DimensionsEnabled}"
+                                    xf:Animations.Secondary="{xf:Animate BasedOn={StaticResource FadeOutAndShrink},Event=None}"
+                                    xf:Animations.SecondaryBinding="{Binding Path=DimensionsEnabled,Converter={StaticResource BoolInverterConverter}}"
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Stretch"
                                     HorizontalContentAlignment="Stretch"

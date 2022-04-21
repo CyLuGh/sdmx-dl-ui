@@ -206,9 +206,9 @@ namespace sdmx_dl_ui.ViewModels
                 Values = g.Select( x => new ChartModel( x.ObsPeriod , x.ObsValue ) ).ToArray() ,
                 LineSmoothness = 0d ,
                 Fill = null ,
-                GeometryFill = null ,
-                GeometryStroke = null ,
-                //GeometrySize = 3,
+                //GeometryFill = null ,
+                //GeometryStroke = null ,
+                GeometrySize = 5,
                 Name = g.Key
             } )
             .ToArray();

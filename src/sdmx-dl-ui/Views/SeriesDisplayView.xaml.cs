@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows;
+using LiveChartsCore;
+using LiveChartsCore.SkiaSharpView;
 using ReactiveUI;
 using sdmx_dl_ui.ViewModels;
 
@@ -29,6 +32,12 @@ namespace sdmx_dl_ui.Views
         private static void PopulateFromViewModel( SeriesDisplayView view , SeriesDisplayViewModel viewModel , CompositeDisposable disposables )
         {
             view.ConfigurationViewHost.ViewModel = viewModel;
+
+            view.CartesianChart.YAxes = new List<Axis> {
+                new Axis
+                {
+                    MinStep=1
+                } };
 
             view.OneWayBind( viewModel ,
                     vm => vm.HasEncounteredError ,

@@ -30,6 +30,10 @@ namespace sdmx_dl_ui
             this.WhenActivated( disposables =>
             {
                 this.WhenAnyValue( x => x.ViewModel )
+                    .BindTo( this , x => x.DataContext )
+                    .DisposeWith( disposables );
+
+                this.WhenAnyValue( x => x.ViewModel )
                     .WhereNotNull()
                     .Do( vm => PopulateFromViewModel( this , vm , disposables ) )
                     .Subscribe()
@@ -73,20 +77,15 @@ namespace sdmx_dl_ui
                     v => v.TextBlockVersion.Text )
                 .DisposeWith( disposables );
 
-            view.OneWayBind( viewModel ,
-                    vm => vm.Sources ,
-                    v => v.ComboBoxSources.ItemsSource )
-                .DisposeWith( disposables );
+
+            view.ComboBoxSources.Provider = viewModel.SourceSuggestionProvider;
 
             view.Bind( viewModel ,
                     vm => vm.ActiveSource ,
                     v => v.ComboBoxSources.SelectedItem )
                 .DisposeWith( disposables );
 
-            view.OneWayBind( viewModel ,
-                    vm => vm.Flows ,
-                    v => v.ComboBoxFlows.ItemsSource )
-                .DisposeWith( disposables );
+            view.ComboBoxFlows.Provider = viewModel.FlowSuggestionProvider;
 
             view.Bind( viewModel ,
                     vm => vm.ActiveFlow ,

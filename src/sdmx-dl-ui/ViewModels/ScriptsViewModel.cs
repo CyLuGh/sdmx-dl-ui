@@ -60,6 +60,8 @@ namespace sdmx_dl_ui.ViewModels
         internal DimensionsOrderingViewModel DimensionsOrderingViewModel { get; }
         internal MainDisplayViewModel MainDisplayViewModel { get; }
         internal KeyDragHandler KeyDragHandler { get; }
+        internal SourceSuggestionProvider SourceSuggestionProvider { get; }
+        internal FlowSuggestionProvider FlowSuggestionProvider { get; }
 
         public ScriptsViewModel()
         {
@@ -69,6 +71,8 @@ namespace sdmx_dl_ui.ViewModels
             DimensionsOrderingViewModel = new DimensionsOrderingViewModel();
             MainDisplayViewModel = new MainDisplayViewModel();
             KeyDragHandler = new KeyDragHandler();
+            SourceSuggestionProvider = new SourceSuggestionProvider();
+            FlowSuggestionProvider = new FlowSuggestionProvider();
 
             InitializeCommands( this );
 
@@ -123,6 +127,14 @@ namespace sdmx_dl_ui.ViewModels
 
                 CheckScriptCommand
                     .ToPropertyEx( this , x => x.ToolVersion , scheduler: RxApp.MainThreadScheduler )
+                    .DisposeWith( disposables );
+
+                this.WhenAnyValue( x => x.Sources )
+                    .Subscribe( sources => SourceSuggestionProvider.Sources = sources )
+                    .DisposeWith( disposables );
+
+                this.WhenAnyValue( x => x.Flows )
+                    .Subscribe( flows => FlowSuggestionProvider.Flows = flows )
                     .DisposeWith( disposables );
 
                 this.WhenAnyValue( x => x.ActiveSource )
@@ -196,6 +208,7 @@ namespace sdmx_dl_ui.ViewModels
                         DimensionsOrderingViewModel.BuildHierarchiesCommand.IsExecuting
                     )
                     .Select( runs => runs.All( x => !x ) )
+                    .Throttle( TimeSpan.FromMilliseconds( 200 ) )
                     .ToPropertyEx( this , x => x.SourcesEnabled , scheduler: RxApp.MainThreadScheduler )
                     .DisposeWith( disposables );
 
@@ -211,6 +224,7 @@ namespace sdmx_dl_ui.ViewModels
                         this.WhenAnyValue( x => x.ActiveSource ).Select( x => x == null )
                         )
                         .Select( runs => runs.All( x => !x ) )
+                        .Throttle( TimeSpan.FromMilliseconds( 200 ) )
                         .ToPropertyEx( this , x => x.FlowsEnabled , scheduler: RxApp.MainThreadScheduler )
                         .DisposeWith( disposables );
 
@@ -227,6 +241,7 @@ namespace sdmx_dl_ui.ViewModels
                         this.WhenAnyValue( x => x.ActiveFlow ).Select( x => x == null )
                     )
                     .Select( runs => runs.All( x => !x ) )
+                    .Throttle( TimeSpan.FromMilliseconds( 200 ) )
                     .ToPropertyEx( this , x => x.DimensionsEnabled , scheduler: RxApp.MainThreadScheduler )
                     .DisposeWith( disposables );
 
@@ -265,7 +280,7 @@ namespace sdmx_dl_ui.ViewModels
                 {
                     var (source, flow, dimensions) = t;
 
-                    var keys = @this.Engine.FetchKeys(source, flow, dimensions )
+                    var keys = @this.Engine.FetchKeys( source , flow , dimensions )
                         .Match( r => r , _ => Array.Empty<SeriesKey>() );
 
                     var count = dimensions.Count( x => x.Position.HasValue );

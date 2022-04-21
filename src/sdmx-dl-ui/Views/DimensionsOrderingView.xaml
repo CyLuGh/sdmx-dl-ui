@@ -13,11 +13,7 @@
                           mc:Ignorable="d"
                           d:DesignHeight="450"
                           d:DesignWidth="800">
-    <Border Padding="5"
-            CornerRadius="5"
-            BorderThickness="1"
-            BorderBrush="{DynamicResource MaterialDesignDivider}"
-            Background="{DynamicResource MaterialDesignBackground}">
+    <materialDesign:Card Padding="5">
         <mah:MetroTabControl mah:TabControlHelper.Underlined="TabPanel">
             <mah:MetroTabItem Header="Explorer">
                 <TreeView x:Name="TreeViewDimensions"
@@ -94,5 +90,5 @@
                 </Grid>
             </mah:MetroTabItem>
         </mah:MetroTabControl>
-    </Border>
+    </materialDesign:Card>
 </rxui:ReactiveUserControl>
