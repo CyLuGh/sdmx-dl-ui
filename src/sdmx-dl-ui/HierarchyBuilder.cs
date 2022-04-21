@@ -37,7 +37,7 @@ namespace sdmx_dl_ui
                 .Select( o =>
                 {
                     var splits = key.Split( '.' );
-                    splits[desiredPosition - 1] = o.Code;
+                    splits[dim.Position - 1] = o.Code;
                     return new HierarchicalCodeLabelViewModel( desiredPosition != dimensionViewModels.Length )
                     {
                         Label = o.Label ,
