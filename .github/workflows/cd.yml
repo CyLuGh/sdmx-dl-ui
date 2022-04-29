@@ -76,12 +76,13 @@ jobs:
           dotnet-version: 6.0.x
 
       - name: Build
-        run: dotnet publish -r win10-x64 -p:PublishSingleFile=true -p:PublishTrimmed=false --self-contained true -p:PublishReadyToRun=false --configuration Release
+        run: dotnet publish -r win10-x64 -p:PublishSingleFile=false -p:PublishTrimmed=false --self-contained true -p:PublishReadyToRun=false --configuration Release
         working-directory: src/sdmx-dl-ui
 
       - name: Clean pdb and Zip
         run: |
           rm src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/*.pdb
+          Get-ChildItem -Path src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/ -Exclude "*.*", "res" | Foreach-object { Remove-item -Recurse -path $_.FullName }
           Compress-Archive -Path src/sdmx-dl-ui/bin/Release/net6.0-windows/win10-x64/publish/* -DestinationPath sdmx-dl-ui.zip
 
       - name: Create Release
