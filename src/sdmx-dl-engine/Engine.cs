@@ -17,11 +17,11 @@ namespace sdmx_dl_engine
             var path = Path.Combine(
                 Path.GetDirectoryName( Process.GetCurrentProcess().MainModule.FileName ) ,
                 "res" ,
-                "sdmx-dl-3.0.0-beta.5-bin.jar" );
+                "sdmx-dl-bin.jar" );
 
             if ( !File.Exists( path ) )
             {
-                throw new FileNotFoundException( "sdmx-dl-3.0.0-beta.5-bin.jar not found" );
+                throw new FileNotFoundException( "sdmx-dl-bin.jar not found" );
             }
 
             _enginePath = path;
@@ -32,7 +32,9 @@ namespace sdmx_dl_engine
             {
                 Arguments = new StringBuilder()
                     .Append( "-jar " )
+                    .Append( '"' )
                     .Append( _enginePath )
+                    .Append( '"' )
                     .Append( " " )
                     .AppendJoin( ' ' , arguments )
                     .ToString() ,

@@ -7,8 +7,8 @@
                           xmlns:rxui="http://reactiveui.net"
                           xmlns:local="clr-namespace:sdmx_dl_ui.Views"
                           xmlns:viewmodels="clr-namespace:sdmx_dl_ui.ViewModels"
-                          xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
                           xmlns:wpf="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
+                          xmlns:ScottPlot="clr-namespace:ScottPlot;assembly=ScottPlot.WPF"
                           Background="{DynamicResource MaterialDesignBackground}"
                           mc:Ignorable="d"
                           d:DesignHeight="450"
@@ -20,9 +20,11 @@
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <lvc:CartesianChart x:Name="CartesianChart"
+        <!--<lvc:CartesianChart x:Name="CartesianChart"
                             LegendPosition="Bottom"
-                            Margin="5" />
+                            Margin="5" />-->
+
+        <ScottPlot:WpfPlot x:Name="WpfPlot" Margin="5" />
 
         <DataGrid x:Name="DataGrid"
                   AutoGenerateColumns="False"

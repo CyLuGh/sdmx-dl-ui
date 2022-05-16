@@ -1,7 +1,5 @@
 ﻿using System.Reflection.Emit;
 using DynamicData;
-using LiveChartsCore;
-using LiveChartsCore.SkiaSharpView;
 using MoreLinq;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -22,7 +20,6 @@ namespace sdmx_dl_ui.ViewModels
     public class SeriesDisplayViewModel : ReactiveObject, IActivatableViewModel, IEquatable<SeriesDisplayViewModel>
     {
         [Reactive] public string Key { get; set; }
-        [Reactive] public List<Axis> XAxes { get; set; }
 
         [Reactive] public string PeriodFormat { get; set; } = "yyyy-MM";
         [Reactive] public ushort Decimals { get; set; } = 2;
@@ -37,30 +34,22 @@ namespace sdmx_dl_ui.ViewModels
         public CodeLabelInfo[] Infos { [ObservableAsProperty] get; }
         public DimensionChooser[] DimensionChoosers { [ObservableAsProperty] get; }
         [Reactive] public DimensionChooser SelectedDimensionChooser { get; set; }
-        public ISeries[] LineSeries { [ObservableAsProperty] get; }
 
         internal ReactiveCommand<string , DataSeriesViewModel[]> RetrieveDataSeriesCommand { get; private set; }
         internal ReactiveCommand<string , MetaSeries[]> RetrieveMetaSeriesCommand { get; private set; }
         internal ReactiveCommand<(string, string[]) , CodeLabelInfo[]> ParseKeyCommand { get; private set; }
+
+        internal Interaction<ChartSeries[] , Unit> DrawChartInteraction { get; }
+            = new( RxApp.MainThreadScheduler );
 
         public ViewModelActivator Activator { get; }
 
         public SeriesDisplayViewModel()
         {
             Activator = new ViewModelActivator();
+            DrawChartInteraction.RegisterHandler( ctx => ctx.SetOutput( Unit.Default ) );
 
             InitializeCommands( this );
-
-            LiveCharts.Configure( config =>
-            {
-                config.HasMap<ChartModel>( ( cm , point ) =>
-                {
-                    point.PrimaryValue = cm.Value;
-                    point.SecondaryValue = cm.DateTime.ToOADate();
-                } );
-
-                config.AddLightTheme();
-            } );
 
             this.WhenAnyValue( x => x.Key )
                 .Where( s => !string.IsNullOrWhiteSpace( s ) && s.Split( ' ' ).Length == 3 )
@@ -148,25 +137,10 @@ namespace sdmx_dl_ui.ViewModels
                     .ToPropertyEx( this , x => x.IsWorking , scheduler: RxApp.MainThreadScheduler )
                     .DisposeWith( disposables );
 
-                this.WhenAnyValue( x => x.PeriodFormat )
-                    .Do( _ =>
-                        {
-                            XAxes = new List<Axis>
-                            {
-                                new Axis
-                                {
-                                    Labeler = value => DateTime.FromOADate( value ).ToString(PeriodFormat),
-                                    LabelsRotation = 45
-                                }
-                            };
-                        } )
-                    .Subscribe()
-                    .DisposeWith( disposables );
-
                 this.WhenAnyValue( x => x.Data )
                     .WhereNotNull()
                     .Select( BuildChartSeries )
-                    .ToPropertyEx( this , x => x.LineSeries , scheduler: RxApp.MainThreadScheduler )
+                    .Subscribe( async cs => await DrawChartInteraction.Handle( cs ) )
                     .DisposeWith( disposables );
 
                 this.WhenAnyValue( x => x.Decimals )
@@ -199,17 +173,12 @@ namespace sdmx_dl_ui.ViewModels
             } );
         }
 
-        private static LineSeries<ChartModel>[] BuildChartSeries( IEnumerable<DataSeriesViewModel> dataSeries )
+        private static ChartSeries[] BuildChartSeries( IEnumerable<DataSeriesViewModel> dataSeries )
             => dataSeries.GroupBy( x => x.Series )
-            .Select( g => new LineSeries<ChartModel>
+            .Select( g => new ChartSeries
             {
+                Title = g.Key ,
                 Values = g.Select( x => new ChartModel( x.ObsPeriod , x.ObsValue ) ).ToArray() ,
-                LineSmoothness = 0d ,
-                Fill = null ,
-                //GeometryFill = null ,
-                //GeometryStroke = null ,
-                GeometrySize = 5,
-                Name = g.Key
             } )
             .ToArray();
 

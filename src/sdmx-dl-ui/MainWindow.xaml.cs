@@ -52,6 +52,12 @@ namespace sdmx_dl_ui
                 .DisposeWith( disposables );
 
             view.OneWayBind( viewModel ,
+                vm => vm.IsWorking ,
+                v => v.LoaderViewBox.Visibility ,
+                b => b ? Visibility.Visible : Visibility.Collapsed )
+                .DisposeWith( disposables );
+
+            view.OneWayBind( viewModel ,
                     vm => vm.SourcesEnabled ,
                     v => v.ComboBoxSources.IsEnabled )
                 .DisposeWith( disposables );
@@ -76,7 +82,6 @@ namespace sdmx_dl_ui
                     vm => vm.ToolVersion ,
                     v => v.TextBlockVersion.Text )
                 .DisposeWith( disposables );
-
 
             view.ComboBoxSources.Provider = viewModel.SourceSuggestionProvider;
 

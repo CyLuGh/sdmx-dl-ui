@@ -18,13 +18,13 @@
     <Window.Resources>
         <DataTemplate x:Key="SourceTemplate" DataType="{x:Type engine:Source}">
             <Grid>
-                <TextBlock Text="{Binding Path=Description}"/>
+                <TextBlock Text="{Binding Path=Description}" />
             </Grid>
         </DataTemplate>
 
         <DataTemplate x:Key="FlowTemplate" DataType="{x:Type engine:Flow}">
             <Grid>
-                <TextBlock Text="{Binding Path=Label}"/>
+                <TextBlock Text="{Binding Path=Label}" />
             </Grid>
         </DataTemplate>
     </Window.Resources>
@@ -56,7 +56,190 @@
                                     Grid.Row="0"
                                     Grid.RowSpan="3"
                                     Grid.Column="0"
-                                    Grid.ColumnSpan="3"/>
+                                    Grid.ColumnSpan="3" />
+
+            <Viewbox x:Name="LoaderViewBox"
+                     Stretch="Fill" Margin="10" Grid.RowSpan="3">
+                <Canvas Width="100" Height="100">
+                    <Path x:Name="VertLeftPath"
+                          Stroke="{DynamicResource PrimaryHueMidBrush}"
+                          StrokeThickness="1"
+                          StrokeStartLineCap="Round"
+                          StrokeEndLineCap="Round">
+                        <Path.Data>
+                            <LineGeometry x:Name="VertLeftGeo"
+                                          StartPoint="0,0"
+                                          EndPoint="0,10" />
+                        </Path.Data>
+                    </Path>
+
+                    <Path x:Name="HorBottomPath"
+                          Stroke="{DynamicResource PrimaryHueMidBrush}"
+                          StrokeThickness="1"
+                          StrokeStartLineCap="Round"
+                          StrokeEndLineCap="Round"
+                          Opacity="0">
+                        <Path.Data>
+                            <LineGeometry x:Name="HorBottomGeo"
+                                          StartPoint="0,100"
+                                          EndPoint="10,100" />
+                        </Path.Data>
+                    </Path>
+
+                    <Path x:Name="VertRightPath"
+                          Stroke="{DynamicResource PrimaryHueMidBrush}"
+                          StrokeThickness="1"
+                          StrokeStartLineCap="Round"
+                          StrokeEndLineCap="Round"
+                          Opacity="0">
+                        <Path.Data>
+                            <LineGeometry x:Name="VertRightGeo"
+                                          StartPoint="100,100"
+                                          EndPoint="100,90" />
+                        </Path.Data>
+                    </Path>
+
+                    <Path x:Name="HorTopPath"
+                          Stroke="{DynamicResource PrimaryHueMidBrush}"
+                          StrokeThickness="1"
+                          StrokeStartLineCap="Round"
+                          StrokeEndLineCap="Round"
+                          Opacity="0">
+                        <Path.Data>
+                            <LineGeometry x:Name="HorTopGeo"
+                                          StartPoint="100,0"
+                                          EndPoint="90,0" />
+                        </Path.Data>
+                    </Path>
+
+                    <Canvas.Triggers>
+                        <EventTrigger RoutedEvent="Canvas.Loaded">
+                            <BeginStoryboard x:Name="AnimationStoryboard"
+                                     HandoffBehavior="Compose">
+                                <Storyboard DesiredFrameRate="60"
+                                    RepeatBehavior="Forever">
+                                    <PointAnimation Storyboard.TargetName="VertLeftGeo"
+                                            Storyboard.TargetProperty="StartPoint"
+                                            From="0,0"
+                                            To="0,100"
+                                            BeginTime="0:0:0"
+                                            Duration="0:0:2" />
+
+                                    <PointAnimation Storyboard.TargetName="VertLeftGeo"
+                                            Storyboard.TargetProperty="EndPoint"
+                                            From="0,10"
+                                            To="0,100"
+                                            BeginTime="0:0:0"
+                                            Duration="0:0:1.8" />
+
+                                    <DoubleAnimation Storyboard.TargetName="VertLeftPath"
+                                                     Storyboard.TargetProperty="Opacity"
+                                                     To="0"
+                                                     BeginTime="0:0:2"
+                                                     Duration="0" />
+
+                                    <DoubleAnimation Storyboard.TargetName="HorBottomPath"
+                                                     Storyboard.TargetProperty="Opacity"
+                                                     To="1"
+                                                     BeginTime="0:0:1.8"
+                                                     Duration="0" />
+
+                                    <PointAnimation Storyboard.TargetName="HorBottomGeo"
+                                                    Storyboard.TargetProperty="EndPoint"
+                                                    From="0,100"
+                                                    To="100,100"
+                                                    BeginTime="0:0:1.8"
+                                                    Duration="0:0:2" />
+
+                                    <PointAnimation Storyboard.TargetName="HorBottomGeo"
+                                                    Storyboard.TargetProperty="StartPoint"
+                                                    From="0,100"
+                                                    To="100,100"
+                                                    BeginTime="0:0:2"
+                                                    Duration="0:0:2" />
+
+                                    <DoubleAnimation Storyboard.TargetName="VertRightPath"
+                                                     Storyboard.TargetProperty="Opacity"
+                                                     To="1"
+                                                     BeginTime="0:0:3.8"
+                                                     Duration="0" />
+
+                                    <DoubleAnimation Storyboard.TargetName="HorBottomPath"
+                                                     Storyboard.TargetProperty="Opacity"
+                                                     To="0"
+                                                     BeginTime="0:0:4"
+                                                     Duration="0" />
+
+                                    <PointAnimation Storyboard.TargetName="VertRightGeo"
+                                                    Storyboard.TargetProperty="EndPoint"
+                                                    From="100,100"
+                                                    To="100,0"
+                                                    BeginTime="0:0:3.8"
+                                                    Duration="0:0:2" />
+
+                                    <PointAnimation Storyboard.TargetName="VertRightGeo"
+                                                    Storyboard.TargetProperty="StartPoint"
+                                                    From="100,100"
+                                                    To="100,0"
+                                                    BeginTime="0:0:4"
+                                                    Duration="0:0:2" />
+
+                                    <DoubleAnimation Storyboard.TargetName="HorTopPath"
+                                                     Storyboard.TargetProperty="Opacity"
+                                                     To="1"
+                                                     BeginTime="0:0:5.8"
+                                                     Duration="0" />
+
+                                    <DoubleAnimation Storyboard.TargetName="VertRightPath"
+                                                     Storyboard.TargetProperty="Opacity"
+                                                     To="0"
+                                                     BeginTime="0:0:6"
+                                                     Duration="0" />
+
+                                    <PointAnimation Storyboard.TargetName="HorTopGeo"
+                                                    Storyboard.TargetProperty="EndPoint"
+                                                    From="100,0"
+                                                    To="0,0"
+                                                    BeginTime="0:0:5.8"
+                                                    Duration="0:0:2" />
+
+                                    <PointAnimation Storyboard.TargetName="HorTopGeo"
+                                                    Storyboard.TargetProperty="StartPoint"
+                                                    From="100,0"
+                                                    To="0,0"
+                                                    BeginTime="0:0:6"
+                                                    Duration="0:0:2" />
+
+                                    <DoubleAnimation Storyboard.TargetName="HorTopPath"
+                                                     Storyboard.TargetProperty="Opacity"
+                                                     To="0"
+                                                     BeginTime="0:0:8"
+                                                     Duration="0" />
+
+                                    <PointAnimation Storyboard.TargetName="VertLeftGeo"
+                                            Storyboard.TargetProperty="EndPoint"
+                                            From="0,0"
+                                            To="0,10"
+                                            BeginTime="0:0:7.8"
+                                            Duration="0:0:0.2" />
+
+                                    <PointAnimation Storyboard.TargetName="VertLeftGeo"
+                                            Storyboard.TargetProperty="StartPoint"
+                                            To="0,0"
+                                            BeginTime="0:0:7.8"
+                                            Duration="0" />
+
+                                    <DoubleAnimation Storyboard.TargetName="VertLeftPath"
+                                                     Storyboard.TargetProperty="Opacity"
+                                                     To="1"
+                                                     BeginTime="0:0:7.8"
+                                                     Duration="0" />
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Canvas.Triggers>
+                </Canvas>
+            </Viewbox>
 
             <materialDesign:Card x:Name="CardSource"
                                  xf:Animations.Primary="{xf:Animate BasedOn={StaticResource FadeInAndGrow},Event=None}"
@@ -72,7 +255,7 @@
                                               HorizontalAlignment="Stretch"
                                               DisplayMember="Description"
                                               ItemTemplate="{StaticResource SourceTemplate}"
-                                              Style="{StaticResource MaterialAutoCompleteComboBox}"/>
+                                              Style="{StaticResource MaterialAutoCompleteComboBox}" />
                 </StackPanel>
             </materialDesign:Card>
 
@@ -90,7 +273,7 @@
                                               HorizontalAlignment="Stretch"
                                               DisplayMember="Label"
                                               ItemTemplate="{StaticResource FlowTemplate}"
-                                              Style="{StaticResource MaterialAutoCompleteComboBox}"/>
+                                              Style="{StaticResource MaterialAutoCompleteComboBox}" />
                 </StackPanel>
             </materialDesign:Card>
 
