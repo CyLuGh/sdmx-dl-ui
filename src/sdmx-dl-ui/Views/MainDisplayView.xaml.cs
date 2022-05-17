@@ -59,7 +59,7 @@ namespace sdmx_dl_ui.Views
                     var tabItem = new MetroTabItem
                     {
                         Header = ctx.Input.Key ,
-                        Content = new ViewModelViewHost
+                        Content = new SeriesDisplayView
                         {
                             ViewModel = ctx.Input ,
                             HorizontalContentAlignment = HorizontalAlignment.Stretch ,
