@@ -36,19 +36,15 @@
                   Grid.Row="2">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Series"
-                                    Binding="{Binding Path=Series}"
-                                    Width="*" />
-                <DataGridTextColumn Header="Title"
-                                    Binding="{Binding Path=Title}"
-                                    Width="*" />
+                                    Binding="{Binding Path=Series}" />
                 <DataGridTextColumn Header="Period"
                                     Binding="{Binding Path=FormattedPeriod}"
-                                    SortMemberPath="ObsPeriod"
-                                    Width="*" />
+                                    SortMemberPath="ObsPeriod" />
                 <DataGridTextColumn Header="Value"
                                     Binding="{Binding Path=FormattedValue}"
-                                    SortMemberPath="ObsValue"
-                                    Width="*" />
+                                    SortMemberPath="ObsValue" />
+                <DataGridTextColumn Header="Title"
+                                    Binding="{Binding Path=Title}" />
             </DataGrid.Columns>
         </DataGrid>
 

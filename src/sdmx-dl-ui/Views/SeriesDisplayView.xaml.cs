@@ -12,15 +12,15 @@ using ScottPlot.Plottable;
 using ScottPlot;
 using System.Linq;
 using System.Text;
+using sdmx_dl_ui.Views.Infrastructure;
+using System.Drawing;
 
 namespace sdmx_dl_ui.Views
 {
     public partial class SeriesDisplayView
     {
-        //private Crosshair Crosshair { get; }
+        private Crosshair Crosshair { get; }
         private List<ScatterPlot> Scatters { get; }
-
-        private MarkerPlot HighlightedPoint { get; }
 
         public SeriesDisplayView()
         {
@@ -28,18 +28,13 @@ namespace sdmx_dl_ui.Views
 
             Scatters = new();
 
-            WpfPlot.Plot.Palette = ScottPlot.Drawing.Palette.DarkPastel;
+            WpfPlot.Plot.Palette = ScottPlot.Drawing.Palette.ColorblindFriendly;
             WpfPlot.Plot.Style( ScottPlot.Style.Seaborn );
             WpfPlot.Plot.Legend( true , ScottPlot.Alignment.LowerRight );
 
-            //Crosshair = WpfPlot.Plot.AddCrosshair( 0 , 0 );
-            //Crosshair.VerticalLine.PositionFormatter = x => DateTime.FromOADate( x ).ToString( "yyyy-MM-dd" );
-
-            HighlightedPoint = WpfPlot.Plot.AddPoint( 0 , 0 );
-            HighlightedPoint.Color = System.Drawing.Color.Red;
-            HighlightedPoint.MarkerSize = 10;
-            HighlightedPoint.MarkerShape = ScottPlot.MarkerShape.filledCircle;
-            HighlightedPoint.IsVisible = false;
+            Crosshair = WpfPlot.Plot.AddCrosshair( 0 , 0 );
+            Crosshair.HorizontalLine.IsVisible = false;
+            Crosshair.Color = Color.SlateGray;
 
             WpfPlot.Refresh();
 
@@ -56,6 +51,12 @@ namespace sdmx_dl_ui.Views
         private static void PopulateFromViewModel( SeriesDisplayView view , SeriesDisplayViewModel viewModel , CompositeDisposable disposables )
         {
             view.ConfigurationViewHost.ViewModel = viewModel;
+
+            view.OneWayBind( viewModel ,
+                vm => vm.PeriodFormat ,
+                v => v.Crosshair.VerticalLine.PositionFormatter ,
+                s => x => DateTime.FromOADate( x ).ToString( s ) )
+                .DisposeWith( disposables );
 
             view.OneWayBind( viewModel ,
                     vm => vm.HasEncounteredError ,
@@ -82,18 +83,14 @@ namespace sdmx_dl_ui.Views
 
             view.WpfPlot.Events()
                 .MouseEnter
-                .Subscribe( _ =>
-                {
-                    //view.Crosshair.IsVisible = true;
-                } )
+                .Subscribe( _ => view.Crosshair.IsVisible = true )
                 .DisposeWith( disposables );
 
             view.WpfPlot.Events()
                 .MouseLeave
                 .Subscribe( _ =>
                 {
-                    view.HighlightedPoint.IsVisible = false;
-                    //view.Crosshair.IsVisible = false;
+                    view.Crosshair.IsVisible = false;
                     view.WpfPlot.Plot.Clear( typeof( Tooltip ) );
 
                     view.WpfPlot.Refresh();
@@ -102,38 +99,46 @@ namespace sdmx_dl_ui.Views
 
             view.WpfPlot.Events()
                 .MouseMove
-                .Subscribe( _ =>
-                {
-                    view.RenderMouseMove();
-                } )
+                .Subscribe( _ => view.RenderMouseMove() )
                 .DisposeWith( disposables );
         }
 
         private void RenderMouseMove()
         {
             (double coordinateX, double coordinateY) = WpfPlot.GetMouseCoordinates();
-            //Crosshair.X = coordinateX;
+            Crosshair.X = coordinateX;
             //Crosshair.Y = coordinateY;
             var xyRatio = WpfPlot.Plot.XAxis.Dims.PxPerUnit / WpfPlot.Plot.YAxis.Dims.PxPerUnit;
 
-            var location = Scatters.Select( sp => (ScatterPlot: sp, Point: sp.GetPointNearestX( coordinateX )) )
-                .MinBy( x => Math.Abs( coordinateY - x.Point.y ) );
+            if ( Scatters.Count > 0 )
+            {
+                WpfPlot.Plot.Clear( typeof( Tooltip ) );
 
-            HighlightedPoint.X = location.Point.x;
-            HighlightedPoint.Y = location.Point.y;
-            HighlightedPoint.Color = location.ScatterPlot.Color;
-            HighlightedPoint.IsVisible = true;
+                var locations = Scatters.Select( sp => (ScatterPlot: sp, Point: sp.GetPointNearestX( coordinateX )) ).ToArray();
 
-            WpfPlot.Plot.Clear( typeof( Tooltip ) );
-            var sb = new StringBuilder();
-            sb.AppendLine( location.ScatterPlot.Label );
-            sb.Append( "Period: " );
-            sb.AppendFormat( "{0:yyyy-MM-dd}" , DateTime.FromOADate( location.Point.x ) ).AppendLine();
-            sb.Append( "Value: " );
-            sb.AppendFormat( "{0:N2}" , location.Point.y );
-            WpfPlot.Plot.AddTooltip( sb.ToString() , location.Point.x , location.Point.y );
+                /* Single tooltip */
+                //var nearestLocation = locations.MinBy( x => Math.Abs( coordinateY - x.Point.y ) );
+                //var tooltipText = $"{nearestLocation.ScatterPlot.Label} > {DateTime.FromOADate( nearestLocation.Point.x ):yyyy-MM-dd} : {nearestLocation.Point.y:N2}";
+                //WpfPlot.Plot.AddTooltip( tooltipText , nearestLocation.Point.x , nearestLocation.Point.y );
+
+                /* Multiple tooltips */
+                foreach ( var location in locations )
+                    DrawTooltip( location );
+            }
 
             WpfPlot.Refresh();
+        }
+
+        private void DrawTooltip( (ScatterPlot ScatterPlot, (double x, double y, int index) Point) location )
+        {
+            var format = $"N{ViewModel.Decimals}";
+            var tooltipText = $"{location.ScatterPlot.Label} > {location.Point.y.ToString( format )}";
+            var tooltip = WpfPlot.Plot.AddTooltip( tooltipText , location.Point.x , location.Point.y );
+
+            tooltip.FillColor = location.ScatterPlot.Color.MakeTransparent( 200 );
+            tooltip.BorderColor = location.ScatterPlot.Color;
+            tooltip.Font.Color = location.ScatterPlot.Color.FindForegroundColor();
+            tooltip.Font.Bold = true;
         }
 
         private void DisplaySeries( ChartSeries[] series )

@@ -14,7 +14,7 @@
         <Setter Property="BorderThickness" Value="0,0,0,1" />
         <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignTextBoxBorder}" />
         <Setter Property="Background" Value="Transparent" />
-        <!--<Setter Property="KeyboardNavigation.TabNavigation" Value="None"/>-->
+        <!--<Setter Property="KeyboardNavigation.TabNavigation" Value="None" />-->
         <Setter Property="HorizontalContentAlignment" Value="Left" />
         <Setter Property="VerticalContentAlignment" Value="Top" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -84,7 +84,6 @@
                                 </Grid>
                             </Border>
                         </Popup>
-
                     </Grid>
                     <!--</Border>-->
                     <ControlTemplate.Triggers>
@@ -141,7 +140,7 @@
                                     <Expander x:Name="PART_Expander"
                                               DockPanel.Dock="Right"
                                               Background="{DynamicResource MaterialDesignBackground}"
-                                              Margin="1"/>
+                                              Margin="1" />
                                     <TextBox
                                         x:Name="PART_Editor"
                                         HorizontalAlignment="Stretch"
@@ -151,7 +150,8 @@
                                         materialDesign:TextFieldAssist.HasClearButton="True"
                                         MaxLength="{Binding Path=MaxLength, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay}"
                                         Style="{StaticResource ResourceKey=MaterialDesignTextBox}"
-                                        Text="{Binding Path=Text, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay}" />
+                                        Text="{Binding Path=Text, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay}"
+                                        Margin="5 0 0 0" />
                                 </DockPanel>
                             </Grid>
                         </DockPanel>
@@ -187,7 +187,6 @@
                                 </Grid>
                             </Border>
                         </Popup>
-
                     </Grid>
                     <!--</Border>-->
                     <ControlTemplate.Triggers>
