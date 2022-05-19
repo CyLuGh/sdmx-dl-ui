@@ -85,5 +85,15 @@ namespace EngineTests
                 d.Length.Should().Be( expectedCount );
             } );
         }
+
+        [Theory]
+        [InlineData( "RNG" , true )]
+        [InlineData( "should not exist" , false )]
+        public void TestCheckAccess( string source , bool expectedStatus )
+        {
+            var engine = new Engine();
+            var res = engine.CheckAccess( source );
+            res.ShouldBeRight( a => a.Accessible.Should().Be( expectedStatus ) );
+        }
     }
 }

@@ -119,5 +119,12 @@ namespace sdmx_dl_engine
 
         public Either<Error , MetaSeries[]> FetchMeta( string key )
             => Query<MetaSeries>( new[] { "fetch" , "meta" }.Concat( key.Split( ' ' ) ).ToArray() );
+
+        public Either<Error , Access> CheckAccess( Source source )
+            => CheckAccess( source.Name );
+
+        public Either<Error , Access> CheckAccess( string source )
+            => Query<Access>( "check" , "access" , source )
+                .Match<Either<Error , Access>>( x => x[0] , e => e );
     }
 }
